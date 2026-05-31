@@ -56,8 +56,10 @@ function formatDate(timestamp) {
 }
 
 function formatPrice(price) {
+  if (price === null || typeof price === "undefined" || price === "") return "$—";
+
   const value = Number(price);
-  if (!Number.isFinite(value)) return "$—";
+  if (!Number.isFinite(value) || value <= 0) return "$—";
 
   return new Intl.NumberFormat("en-US", {
     style: "currency",

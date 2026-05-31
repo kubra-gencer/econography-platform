@@ -388,18 +388,18 @@ export default function BTCPage() {
             <div className="max-w-md rounded-[1.45rem] border border-white/10 bg-white/[0.035] p-3.5 backdrop-blur-2xl">
               <div className="flex items-center gap-2">
                 <span
-  className={`h-2 w-2 rounded-full ${
-    memoryMode === "date" && selectedDate
-      ? dateHistoryStatus === "live"
-        ? "bg-cyan-300"
-        : dateHistoryStatus === "syncing"
-        ? "bg-amber-300"
-        : "bg-pink-300"
-      : status === "live"
-      ? "bg-emerald-300"
-      : "bg-amber-300"
-  } shadow-[0_0_18px_currentColor]`}
-/>
+                  className={`h-2 w-2 rounded-full ${
+                    memoryMode === "date" && selectedDate
+                      ? dateHistoryStatus === "live"
+                        ? "bg-cyan-300"
+                        : dateHistoryStatus === "syncing"
+                        ? "bg-amber-300"
+                        : "bg-pink-300"
+                      : status === "live"
+                      ? "bg-emerald-300"
+                      : "bg-amber-300"
+                  } shadow-[0_0_18px_currentColor]`}
+                />
                 <p className="mono-font text-[0.48rem] uppercase tracking-[0.18em] text-white/42">
                   {memoryMode === "date" && selectedDate ? (dateHistoryStatus === "live" ? "Historical data loaded" : dateHistoryStatus === "syncing" ? "Loading historical data" : "Historical data unavailable") : status === "syncing" ? "Syncing stream" : status === "live" ? "Stream active" : "Fallback stream"}
                 </p>
@@ -579,7 +579,7 @@ function MarketSynthesisPanel({ cards, memoryState, points, compact = false }) {
   return (
     <aside className={`rounded-[1.6rem] border border-white/10 bg-white/[0.028] p-3 backdrop-blur-2xl ${compact ? "" : "2xl:min-h-[690px]"}`}>
       <div className="mt-3 rounded-[1.45rem] border border-white/10 bg-black/18 p-3">
-        <p className="mono-font text-[0.48rem] uppercase tracking-[0.18em] text-white/38">Current Market Reading</p>
+        <p className="mono-font text-[0.48rem] uppercase tracking-[0.18em] text-white/38">Market Reading</p>
         <h2 className="mt-3 text-[1.25rem] font-medium tracking-[-0.03em] text-white/90">Market state: {memoryState.label}</h2>
         <p className="mt-2 text-xs leading-6 text-white/46">{memoryState.tone}</p>
         <p className="mt-2 text-[0.6rem] leading-5 text-white/34">
@@ -925,10 +925,10 @@ function SystemInterpretation({ memoryState, pulse }) {
         <span className="font-medium text-white/78">{memoryState.label}:</span> {memoryState.text}
       </p>
       <p className="mt-4 text-xs leading-6 text-white/38">
-  {safeNumber(pulse.price, 0) > 0
-    ? `BTC price reference is ${formatCurrency(pulse.price)}.`
-    : "BTC price reference is unavailable until public historical data loads."} This page treats market data as visual memory, not as financial advice or a trading signal.
-</p>
+        {hasPositivePrice(pulse.price)
+          ? `BTC price reference is ${formatCurrency(pulse.price)}.`
+          : "BTC price reference is unavailable until public historical data loads."} This page treats market data as visual memory, not as financial advice or a trading signal.
+      </p>
     </section>
   );
 }
@@ -942,11 +942,11 @@ function ResearchBridge() {
         The research page explains the mapping from price, volume, volatility, liquidity and risk into orbit, density, scars, flow and visual memory.
       </p>
       <Link
-       to="/research"
-       className="mt-5 inline-flex rounded-full border border-cyan-200/30 bg-cyan-200/10 px-5 py-3 text-[0.62rem] font-medium uppercase tracking-[0.16em] text-cyan-50 shadow-[0_0_28px_rgba(80,231,255,0.12)] transition hover:bg-cyan-200 hover:text-black"
->
-       Open Research
-    </Link>
+        to="/research"
+        className="mt-5 inline-flex rounded-full border border-cyan-200/30 bg-cyan-200/10 px-5 py-3 text-[0.62rem] font-medium uppercase tracking-[0.16em] text-cyan-50 shadow-[0_0_28px_rgba(80,231,255,0.12)] transition hover:bg-cyan-200 hover:text-black"
+      >
+        Open Research
+      </Link>
     </section>
   );
 }
@@ -1065,12 +1065,12 @@ function buildSynthesisCards(pulse, points) {
 
   return [
     {
-  label: "Price Reference",
-  value: safeNumber(pulse.price, 0) > 0 ? formatCurrency(pulse.price) : "Historical data unavailable",
-  caption: safeNumber(pulse.price, 0) > 0 ? formatPercent(pulse.change24h) : "no synthetic price",
-  color: safeNumber(pulse.change24h) >= 0 ? "#FFD36A" : "#FF3D6E",
-  sparkline: series,
-},
+      label: "Price Reference",
+      value: hasPositivePrice(pulse.price) ? formatCurrency(pulse.price) : "Historical data unavailable",
+      caption: hasPositivePrice(pulse.price) ? formatPercent(pulse.change24h) : "no synthetic price",
+      color: safeNumber(pulse.change24h) >= 0 ? "#FFD36A" : "#FF3D6E",
+      sparkline: series,
+    },
     {
       label: "Volume 24H",
       value: formatCompactCurrency(pulse.volume24h),
@@ -1167,7 +1167,7 @@ function buildTimeline(points) {
     const point = source[sourceIndex] || {};
     return {
       label: formatTimelineLabel(point.timestamp, index),
-      price: safeNumber(point.price, 0) > 0 ? formatCurrency(point.price) : "$—",
+      price: hasPositivePrice(point.price) ? formatCurrency(point.price) : "$—",
     };
   });
 }
@@ -1256,7 +1256,7 @@ function createFallbackSeries(pulse = {}) {
     return {
       index,
       progress,
-      price: basePrice > 0 ? basePrice * (0.91 + priceNormalized * 0.18) : 0,
+      price: basePrice > 0 ? basePrice * (0.91 + priceNormalized * 0.18) : null,
       timestamp: baseTimestamp - (119 - index) * 60 * 60 * 1000,
       direction: priceNormalized >= previousShape ? 1 : -1,
       priceNormalized,
@@ -1291,8 +1291,15 @@ function formatTimelineLabel(timestamp, fallbackIndex) {
 }
 
 function safeNumber(value, fallback = 0) {
+  if (value === null || typeof value === "undefined" || value === "") return fallback;
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
+}
+
+function hasPositivePrice(value) {
+  if (value === null || typeof value === "undefined" || value === "") return false;
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0;
 }
 
 function safeRatio(value, fallback = 0.5) {
@@ -1306,9 +1313,9 @@ function clamp(value, min = 0, max = 100) {
 }
 
 function formatCurrency(value) {
-  const number = safeNumber(value, 0);
-  if (number <= 0) return "$—";
+  if (!hasPositivePrice(value)) return "$—";
 
+  const number = safeNumber(value, 0);
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -1317,9 +1324,9 @@ function formatCurrency(value) {
 }
 
 function formatCompactCurrency(value) {
-  const number = safeNumber(value, 0);
-  if (number <= 0) return "$—";
+  if (!hasPositivePrice(value)) return "$—";
 
+  const number = safeNumber(value, 0);
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
