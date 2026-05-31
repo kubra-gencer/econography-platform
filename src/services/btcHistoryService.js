@@ -62,14 +62,14 @@ function createFallbackHistory(range = "7D", options = {}) {
     const progress = i / Math.max(1, pointCount - 1);
     const timestamp = start + progress * (end - start);
 
-    const basePrice = 107000;
+    const basePrice = isCustomDate ? 0 : 107000;
     const slowWave = Math.sin(progress * Math.PI * 2.2) * 2600;
     const fastWave = Math.sin(progress * Math.PI * 13.5) * 850;
     const stressWave = Math.cos(progress * Math.PI * 8.3) * 420;
     const dateShift = isCustomDate
       ? Math.sin((start / 86_400_000) * Math.PI * 0.17) * 1800
       : 0;
-    const price = basePrice + dateShift + slowWave + fastWave + stressWave;
+    const price = basePrice > 0 ? basePrice + dateShift + slowWave + fastWave + stressWave : 0;
 
     const volume =
       32_000_000_000 +
@@ -86,6 +86,10 @@ function createFallbackHistory(range = "7D", options = {}) {
     isLive: false,
     range: isCustomDate ? options.date : range,
     mode: isCustomDate ? "historical-date" : "range",
+    selectedDate: isCustomDate ? options.date : null,
+    prices,
+    market_caps,
+    total_volumes,
     raw: {
       prices,
       market_caps,
@@ -126,6 +130,10 @@ export async function fetchBTCHistoryData(range = "7D", options = {}) {
       isLive: true,
       range: hasCustomDate ? options.date : range,
       mode: hasCustomDate ? "historical-date" : "range",
+      selectedDate: hasCustomDate ? options.date : null,
+      prices: data.prices,
+      market_caps: data.market_caps,
+      total_volumes: data.total_volumes,
       raw: data,
     };
   } catch (error) {
@@ -173,6 +181,9 @@ export async function fetchBTCHistoryByDate(dateValue, windowDays = 1) {
     selectedDate: dateValue,
     from,
     to,
+    prices: payload.prices,
+    market_caps: payload.market_caps,
+    total_volumes: payload.total_volumes,
     raw: payload,
   };
 }

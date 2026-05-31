@@ -260,7 +260,14 @@ export default function BTCPage() {
 
   if (!activeHistoricalPreset) {
     return {
-      ...pulse,
+      price: 0,
+      change24h: 0,
+      volume24h: 0,
+      volume: 0.42,
+      volatility: 0.36,
+      risk: 0.38,
+      liquidity: 0.5,
+      health: 0.58,
       date: selectedDate,
       markerDate: selectedDate,
       markerLabel: "Custom Date",
@@ -374,7 +381,19 @@ export default function BTCPage() {
 
             <div className="max-w-md rounded-[1.45rem] border border-white/10 bg-white/[0.035] p-3.5 backdrop-blur-2xl">
               <div className="flex items-center gap-2">
-                <span className={`h-2 w-2 rounded-full ${status === "live" ? "bg-emerald-300" : "bg-amber-300"} shadow-[0_0_18px_currentColor]`} />
+                <span
+  className={`h-2 w-2 rounded-full ${
+    memoryMode === "date" && selectedDate
+      ? dateHistoryStatus === "live"
+        ? "bg-cyan-300"
+        : dateHistoryStatus === "syncing"
+        ? "bg-amber-300"
+        : "bg-pink-300"
+      : status === "live"
+      ? "bg-emerald-300"
+      : "bg-amber-300"
+  } shadow-[0_0_18px_currentColor]`}
+/>
                 <p className="mono-font text-[0.48rem] uppercase tracking-[0.18em] text-white/42">
                   {memoryMode === "date" && selectedDate ? (dateHistoryStatus === "live" ? "Historical data loaded" : dateHistoryStatus === "syncing" ? "Loading historical data" : "Historical fallback") : status === "syncing" ? "Syncing stream" : status === "live" ? "Stream active" : "Fallback stream"}
                 </p>
@@ -709,7 +728,7 @@ function MemoryTimeline({ timeline, compact = false }) {
             <span className="h-2 w-2 rounded-full bg-white/60 shadow-[0_0_14px_rgba(255,255,255,0.35)]" />
             <div className="flex flex-1 items-baseline justify-between gap-4 border-b border-white/8 pb-2">
               <p className="text-xs text-white/48">{item.label}</p>
-              <p className="text-sm font-medium text-white/82">{item.price}</p>
+              <p className="text-sm font-medium text-white/82">{item.price === "$—" ? "loading" : item.price}</p>
             </div>
           </div>
         ))}
@@ -881,8 +900,10 @@ function SystemInterpretation({ memoryState, pulse }) {
         <span className="font-medium text-white/78">{memoryState.label}:</span> {memoryState.text}
       </p>
       <p className="mt-4 text-xs leading-6 text-white/38">
-        Current BTC price is {formatCurrency(pulse.price)}. This page treats market data as visual memory, not as financial advice or a trading signal.
-      </p>
+  {safeNumber(pulse.price, 0) > 0
+    ? `BTC price reference is ${formatCurrency(pulse.price)}.`
+    : "BTC price reference is waiting for historical data."} This page treats market data as visual memory, not as financial advice or a trading signal.
+</p>
     </section>
   );
 }
@@ -1019,12 +1040,12 @@ function buildSynthesisCards(pulse, points) {
 
   return [
     {
-      label: "Price Live",
-      value: formatCurrency(pulse.price),
-      caption: formatPercent(pulse.change24h),
-      color: safeNumber(pulse.change24h) >= 0 ? "#FFD36A" : "#FF3D6E",
-      sparkline: series,
-    },
+  label: "Price Reference",
+  value: safeNumber(pulse.price, 0) > 0 ? formatCurrency(pulse.price) : "Historical data loading",
+  caption: safeNumber(pulse.price, 0) > 0 ? formatPercent(pulse.change24h) : "waiting for API",
+  color: safeNumber(pulse.change24h) >= 0 ? "#FFD36A" : "#FF3D6E",
+  sparkline: series,
+},
     {
       label: "Volume 24H",
       value: formatCompactCurrency(pulse.volume24h),
@@ -1121,7 +1142,7 @@ function buildTimeline(points) {
     const point = source[sourceIndex] || {};
     return {
       label: formatTimelineLabel(point.timestamp, index),
-      price: formatCurrency(point.price),
+      price: safeNumber(point.price, 0) > 0 ? formatCurrency(point.price) : "$—",
     };
   });
 }
@@ -1131,7 +1152,7 @@ function buildPulseFromHistoricalPoints(points, selectedDate, preset) {
 
   const first = cleanPoints[0];
   const latest = cleanPoints[cleanPoints.length - 1];
-  const price = safeNumber(latest.price, preset?.market?.price || 0);
+  const price = safeNumber(latest.price, safeNumber(preset?.market?.price, 0));
   const firstPrice = safeNumber(first.price, price);
   const change24h = firstPrice ? ((price - firstPrice) / firstPrice) * 100 : 0;
   const averageVolume = cleanPoints.reduce((sum, point) => sum + safeRatio(point.volumeNormalized, 0.4), 0) / cleanPoints.length;
@@ -1144,7 +1165,7 @@ function buildPulseFromHistoricalPoints(points, selectedDate, preset) {
   return {
     price,
     change24h,
-    volume24h: preset?.market?.volume24h || price * 340000,
+    volume24h: safeNumber(preset?.market?.volume24h, price ? price * 340000 : 0),
     volume: clamp(averageVolume, 0.05, 0.95),
     volatility: clamp(averageVolatility, 0.05, 0.95),
     risk,
@@ -1159,7 +1180,7 @@ function buildPulseFromHistoricalPoints(points, selectedDate, preset) {
   };
 }
 function createFallbackSeries(pulse = {}) {
-  const basePrice = safeNumber(pulse.price, 107034);
+  const basePrice = safeNumber(pulse.price, 0) || 0;
   const change = safeNumber(pulse.change24h, 0);
   const risk = safeRatio(pulse.risk, 0.35);
   const liquidity = safeRatio(pulse.liquidity, 0.55);
@@ -1210,7 +1231,7 @@ function createFallbackSeries(pulse = {}) {
     return {
       index,
       progress,
-      price: basePrice * (0.91 + priceNormalized * 0.18),
+      price: basePrice > 0 ? basePrice * (0.91 + priceNormalized * 0.18) : 0,
       timestamp: baseTimestamp - (119 - index) * 60 * 60 * 1000,
       direction: priceNormalized >= previousShape ? 1 : -1,
       priceNormalized,
