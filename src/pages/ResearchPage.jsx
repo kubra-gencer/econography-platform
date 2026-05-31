@@ -93,11 +93,11 @@ export default function ResearchPage() {
   return (
     <div className="relative overflow-hidden bg-[var(--bg)] pt-28 text-white">
       <div className="absolute inset-0 hero-atmosphere opacity-70" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.16] [background-image:linear-gradient(rgba(80,231,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:72px_72px]" />
-      <div className="pointer-events-none absolute left-[-18%] top-[18%] h-[780px] w-[780px] rounded-full border border-cyan-200/10 opacity-40 blur-[1px]" />
-      <div className="pointer-events-none absolute left-1/2 top-[-180px] h-[720px] w-[980px] -translate-x-1/2 rounded-full bg-cyan-300/10 blur-[170px]" />
-      <div className="pointer-events-none absolute right-[-16%] top-[30%] h-[560px] w-[560px] rounded-full bg-fuchsia-500/9 blur-[160px]" />
-      <div className="pointer-events-none absolute bottom-[8%] left-[-14%] h-[520px] w-[520px] rounded-full bg-amber-300/6 blur-[150px]" />
+      <div className="pointer-events-none absolute inset-0 hidden opacity-[0.16] [background-image:linear-gradient(rgba(80,231,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:72px_72px] md:block" />
+      <div className="pointer-events-none absolute left-[-18%] top-[18%] hidden h-[780px] w-[780px] rounded-full border border-cyan-200/10 opacity-40 blur-[1px] md:block" />
+      <div className="pointer-events-none absolute left-1/2 top-[-120px] h-[360px] w-[520px] -translate-x-1/2 rounded-full bg-cyan-300/8 blur-[90px] md:top-[-180px] md:h-[720px] md:w-[980px] md:bg-cyan-300/10 md:blur-[170px]" />
+      <div className="pointer-events-none absolute right-[-16%] top-[30%] hidden h-[560px] w-[560px] rounded-full bg-fuchsia-500/9 blur-[160px] md:block" />
+      <div className="pointer-events-none absolute bottom-[8%] left-[-14%] hidden h-[520px] w-[520px] rounded-full bg-amber-300/6 blur-[150px] md:block" />
 
       <section className="page-padding relative z-10">
         <div className="mx-auto max-w-[1420px] pb-20">
@@ -125,23 +125,23 @@ export default function ResearchPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 24 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 0.12, duration: 1, ease: [0.76, 0, 0.24, 1] }}
-              className="relative overflow-hidden rounded-[1.8rem] border border-white/10 bg-black/32 p-4 shadow-[0_0_150px_rgba(80,231,255,0.08)] backdrop-blur-2xl"
+              transition={{ delay: 0.08, duration: 0.56, ease: [0.76, 0, 0.24, 1] }}
+              className="relative overflow-hidden rounded-[1.45rem] border border-white/10 bg-black/32 p-3 shadow-[0_0_70px_rgba(80,231,255,0.06)] md:rounded-[1.8rem] md:p-4 md:shadow-[0_0_150px_rgba(80,231,255,0.08)] md:backdrop-blur-2xl"
             >
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_48%,rgba(80,231,255,0.16),transparent_34%),radial-gradient(circle_at_64%_42%,rgba(255,211,106,0.12),transparent_22%),radial-gradient(circle_at_38%_62%,rgba(255,61,110,0.12),transparent_25%)]" />
-              <div className="absolute inset-0 opacity-[0.18] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:42px_42px]" />
-              <div className="absolute left-1/2 top-[44%] h-[340px] w-[340px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-200/10" />
-              <div className="absolute left-1/2 top-[44%] h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.035]" />
+              <div className="absolute inset-0 hidden opacity-[0.18] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:42px_42px] md:block" />
+              <div className="absolute left-1/2 top-[44%] hidden h-[340px] w-[340px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-200/10 md:block" />
+              <div className="absolute left-1/2 top-[44%] hidden h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.035] md:block" />
 
-              <div className="relative z-10 flex min-h-[310px] items-center justify-center pb-3 pt-8">
+              <div className="relative z-10 flex min-h-[230px] items-center justify-center pb-2 pt-8 md:min-h-[310px] md:pb-3">
                 <ResearchOrbit />
               </div>
 
-              <div className="absolute left-4 top-4 z-20 rounded-full border border-white/10 bg-black/34 px-3 py-1.5 backdrop-blur-xl">
+              <div className="absolute left-3 top-3 z-20 rounded-full border border-white/10 bg-black/46 px-2.5 py-1.5 md:left-4 md:top-4 md:bg-black/34 md:px-3 md:backdrop-blur-xl">
                 <p className="mono-font text-[0.48rem] uppercase tracking-[0.18em] text-white/48">Data to memory engine</p>
               </div>
 
-              <div className="relative z-10 mt-2 grid gap-1.5 sm:grid-cols-4">
+              <div className="relative z-10 mt-2 grid gap-1.5 sm:grid-cols-2 lg:grid-cols-4">
                 {systemFlow.map((item) => (
                   <div key={item.step} className="rounded-[0.95rem] border border-white/8 bg-black/30 p-2.5 backdrop-blur-xl">
                     <p className="mono-font text-[0.42rem] uppercase tracking-[0.14em] text-white/30">{item.step}</p>
@@ -155,7 +155,7 @@ export default function ResearchPage() {
           <motion.section
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.82, ease: [0.76, 0, 0.24, 1] }}
+            transition={{ delay: 0.08, duration: 0.42, ease: [0.76, 0, 0.24, 1] }}
             className="mt-6 rounded-[1.35rem] border border-white/10 bg-white/[0.028] p-3.5 backdrop-blur-2xl"
           >
             <div className="grid gap-3 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-center">
@@ -314,11 +314,11 @@ export default function ResearchPage() {
 
 function ResearchOrbit() {
   return (
-    <div className="relative h-[250px] w-[250px] sm:h-[300px] sm:w-[300px]">
+    <div className="relative h-[205px] w-[205px] sm:h-[250px] sm:w-[250px] md:h-[300px] md:w-[300px]">
       <div className="absolute inset-0 rounded-full border border-cyan-200/18 bg-cyan-200/[0.02] shadow-[0_0_90px_rgba(80,231,255,0.08)]" />
       <div className="absolute inset-[11%] rounded-full border border-white/8" />
       <div className="absolute inset-[23%] rounded-full border border-amber-200/14" />
-      <div className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,211,106,0.55),rgba(80,231,255,0.18)_42%,transparent_72%)] blur-[1px]" />
+      <div className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,211,106,0.5),rgba(80,231,255,0.14)_42%,transparent_72%)] md:h-16 md:w-16 md:blur-[1px]" />
 
       {signalMapping.map((item, index) => {
         const angle = (index / signalMapping.length) * Math.PI * 2 - Math.PI / 2;
@@ -359,10 +359,10 @@ function SplitIntro({ eyebrow, title, text }) {
 function RevealCard({ children, className, delay = 0 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 18 }}
+      initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay, duration: 0.78, ease: [0.76, 0, 0.24, 1] }}
+      viewport={{ once: true, amount: 0.08 }}
+      transition={{ delay: Math.min(delay, 0.08), duration: 0.42, ease: [0.76, 0, 0.24, 1] }}
       className={className}
     >
       {children}

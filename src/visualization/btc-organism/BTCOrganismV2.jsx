@@ -1250,16 +1250,18 @@ function MemoryCells({ visualState, points }) {
             }}
             onPointerOut={(event) => {
               event.stopPropagation();
-              setHovered((current) => (selected?.id === cell.id ? current : null));
+              setHovered(null);
               document.body.style.cursor = "";
             }}
             onPointerDown={(event) => {
               event.stopPropagation();
-              setSelected((current) => {
-                const shouldClose = current?.id === cell.id;
-                setHovered(shouldClose ? null : cell);
-                return shouldClose ? null : cell;
-              });
+              setSelected((current) => (current?.id === cell.id ? null : cell));
+              setHovered(cell);
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              setSelected((current) => (current?.id === cell.id ? null : cell));
+              setHovered(cell);
             }}
           >
             {cell.isRisk ? (
@@ -1322,7 +1324,7 @@ function MemoryCells({ visualState, points }) {
                       : "liquidity keeps this point in smooth market flow"}
                   </p>
                   <p className="pt-1 text-[0.58rem] text-white/34">
-                    Tap the same point again to close. Tap another point to inspect it.
+                    Tap the same point again to close this reading.
                   </p>
                 </div>
               </div>
@@ -1395,7 +1397,8 @@ function StartPointMarker({ visualState, points }) {
     const outward = new THREE.Vector3(position.x, 0, position.z).normalize();
     const direction = nextPosition.clone().sub(position).normalize();
     const guideMid = position.clone().lerp(nextPosition, 0.5).add(outward.clone().multiplyScalar(0.08));
-    const labelPosition = position.clone().add(outward.clone().multiplyScalar(0.58)).add(new THREE.Vector3(0, 0.26, 0));
+    // RESTORED: previous larger, non-perspective label style
+    const labelPosition = position.clone().add(outward.clone().multiplyScalar(0.28)).add(new THREE.Vector3(0, 0.18, 0));
 
     return {
       point: first,
@@ -1487,14 +1490,13 @@ function StartPointMarker({ visualState, points }) {
 
       <Html
         center
-        transform
-        distanceFactor={7.5}
+        transform={false}
         position={marker.labelPosition.clone().sub(marker.position)}
-        zIndexRange={[60, 0]}
-        style={{ pointerEvents: "none" }}
+        zIndexRange={[80, 0]}
+        style={{ pointerEvents: "none", transform: "translate3d(-50%, -50%, 0)" }}
       >
-        <div className="rounded-full border border-white/12 bg-black/58 px-2 py-0.5 text-[0.42rem] font-medium uppercase tracking-[0.13em] text-white/66 shadow-[0_10px_26px_rgba(0,0,0,0.34)] backdrop-blur-xl">
-          Start
+        <div className="rounded-full border border-white/12 bg-black/62 px-2.5 py-1 text-[0.48rem] font-medium uppercase tracking-[0.14em] text-white/74 shadow-[0_12px_32px_rgba(0,0,0,0.42)] backdrop-blur-xl">
+          Start · Oldest
         </div>
       </Html>
     </group>
@@ -1510,7 +1512,8 @@ function CurrentPointMarker({ visualState, points }) {
 
     const position = orbitPoint(latest, points, visualState);
     const outward = new THREE.Vector3(position.x, 0, position.z).normalize();
-    const labelPosition = position.clone().add(outward.clone().multiplyScalar(0.64)).add(new THREE.Vector3(0, 0.26, 0));
+    // RESTORED: previous larger, non-perspective label style
+    const labelPosition = position.clone().add(outward.clone().multiplyScalar(0.32)).add(new THREE.Vector3(0, 0.18, 0));
 
     return {
       point: latest,
@@ -1566,14 +1569,13 @@ function CurrentPointMarker({ visualState, points }) {
 
       <Html
         center
-        transform
-        distanceFactor={7.5}
+        transform={false}
         position={marker.labelPosition.clone().sub(marker.position)}
-        zIndexRange={[60, 0]}
-        style={{ pointerEvents: "none" }}
+        zIndexRange={[80, 0]}
+        style={{ pointerEvents: "none", transform: "translate3d(-50%, -50%, 0)" }}
       >
-        <div className="rounded-full border border-white/12 bg-black/58 px-2 py-0.5 text-[0.42rem] font-medium uppercase tracking-[0.13em] text-white/66 shadow-[0_10px_26px_rgba(0,0,0,0.34)] backdrop-blur-xl">
-          Current
+        <div className="rounded-full border border-white/12 bg-black/62 px-2.5 py-1 text-[0.48rem] font-medium uppercase tracking-[0.14em] text-white/74 shadow-[0_12px_32px_rgba(0,0,0,0.42)] backdrop-blur-xl">
+          Current · Latest
         </div>
       </Html>
     </group>
@@ -1598,7 +1600,7 @@ function FlowDirectionMarkers({ visualState, points }) {
         position,
         angle,
         color: point.direction < 0 ? visualState.colors.plasma : visualState.colors.liquiditySoft,
-        opacity: point.direction < 0 ? 0.34 : 0.28,
+        opacity: point.direction < 0 ? 0.42 : 0.34,
       };
     });
   }, [points, visualState]);
@@ -1614,7 +1616,7 @@ function FlowDirectionMarkers({ visualState, points }) {
               new THREE.Vector3(-0.08, 0, 0.02),
             ]}
             color={arrow.color}
-            lineWidth={0.055}
+            lineWidth={0.08}
             transparent
             opacity={arrow.opacity}
             depthWrite={false}
@@ -1899,7 +1901,7 @@ export default function BTCOrganismV2({ pulse, history }) {
   );
 
   return (
-    <div className="relative h-full w-full touch-manipulation overflow-hidden rounded-[32px] bg-[#02040a]">
+    <div className="relative h-full w-full touch-pan-y overflow-hidden rounded-[32px] bg-[#02040a]">
       <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(2,4,10,0.04)_40%,rgba(2,4,10,0.92)_100%)]" />
       <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(circle_at_50%_48%,rgba(111,234,255,0.14),transparent_24%),radial-gradient(circle_at_43%_55%,rgba(255,199,106,0.11),transparent_23%),radial-gradient(circle_at_66%_43%,rgba(255,106,213,0.105),transparent_27%),radial-gradient(circle_at_37%_39%,rgba(103,167,255,0.08),transparent_24%)]" />
 
