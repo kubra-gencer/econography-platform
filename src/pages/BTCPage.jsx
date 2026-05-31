@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-
+import { Link } from "react-router-dom";
 import BTCOrganismV2 from "../visualization/btc-organism/BTCOrganismV2";
 import FullscreenStage from "../components/visual/FullscreenStage";
 import { fetchBTCMarketData } from "../services/btcService";
@@ -454,13 +454,13 @@ function MarketSynthesisPanel({ cards, memoryState, points, compact = false }) {
         <h2 className="mt-3 text-[1.25rem] font-medium tracking-[-0.03em] text-white/90">Market state: {memoryState.label}</h2>
         <p className="mt-2 text-xs leading-6 text-white/46">{memoryState.tone}</p>
         <p className="mt-2 text-[0.6rem] leading-5 text-white/34">
-          Sparklines use normalized BTC history when live history data is available. If the history stream fails, a fallback simulation is displayed.
+          Live range sparklines use normalized BTC history when available. Saved date markers use interpreted demo curves until exact historical fetching is connected.
         </p>
       </div>
 
       <div className={`mt-3 ${compact ? "grid gap-2 md:grid-cols-2 xl:grid-cols-3" : "space-y-2.5"}`}>
         {cards.map((card) => (
-        <article key={card.label} className="rounded-[1.15rem] border border-white/10 bg-black/22 p-3">
+          <article key={card.label} className="rounded-[1.15rem] border border-white/10 bg-black/22 p-3">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="mono-font text-[0.46rem] uppercase tracking-[0.16em] text-white/34">{card.label}</p>
@@ -563,7 +563,7 @@ function MemoryControlPanel({ selectedRange, memoryMode, selectedDate, pendingDa
           <div className="mt-2 space-y-1.5">
             <p className="text-white/60">{points.length} memory points</p>
             <p>{memoryMode === "date" && selectedDate ? `Marker: ${selectedDate}` : `Range: ${selectedRange}`}</p>
-            <p className="text-white/34">Hover cells for local price, volume and volatility.</p>
+            <p className="text-white/34">Hover on desktop or tap on mobile for local price, volume and volatility.</p>
           </div>
         </aside>
       </div>
@@ -658,14 +658,16 @@ function MemoryComposition({ composition, compact = false }) {
     </section>
   );
 }
-
 function FlowIntensityMap({ points, pulse }) {
+  const [selectedCell, setSelectedCell] = useState(null);
+
   const cells = useMemo(() => {
     const source = points.length ? points : createFallbackSeries(pulse);
     return Array.from({ length: 56 }, (_, index) => {
       const point = source[index % source.length] || {};
       const value = safeRatio(point.volumeNormalized, 0.4) * 0.55 + safeRatio(point.localVolatility, 0.3) * 0.45;
       const risk = point.direction < 0;
+
       return {
         id: index,
         value,
@@ -678,34 +680,87 @@ function FlowIntensityMap({ points, pulse }) {
     });
   }, [points, pulse]);
 
+  const activeCell = selectedCell ?? cells[0];
+
   return (
-    <section className="rounded-[2rem] border border-white/10 bg-white/[0.028] p-5 backdrop-blur-2xl">
-      <p className="mono-font text-[0.48rem] uppercase tracking-[0.18em] text-white/38">Market Pressure Grid</p>
-      <p className="mt-2 max-w-4xl text-[0.64rem] leading-5 text-white/42">
-        Cells are sampled from the selected BTC memory range and read left to right, top to bottom. Brightness is calculated from volume and local volatility: 55% volume intensity + 45% volatility. Cyan means smoother flow, gold means high activity, and pink means negative price pressure.
-      </p>
-      <div className="mt-3 flex flex-wrap gap-2 text-[0.56rem] uppercase tracking-[0.13em] text-white/36">
-        <span className="rounded-full border border-white/10 bg-black/24 px-2.5 py-1">Order: oldest sample → newest sample</span>
-        <span className="rounded-full border border-white/10 bg-black/24 px-2.5 py-1">Brightness: volume 55% + volatility 45%</span>
-      </div>
-      <div className="mt-5 grid grid-cols-8 gap-1.5">
-        {cells.map((cell) => (
-          <span
-            key={cell.id}
-            title={`${cell.label} • pressure ${Math.round(cell.value * 100)}% • volume ${Math.round(cell.volume * 100)}% • volatility ${Math.round(cell.volatility * 100)}%`}
-            className="h-4 rounded-full border border-white/5 transition duration-300 hover:scale-y-125 hover:border-white/20"
-            style={{
-              backgroundColor: cell.color,
-              opacity: 0.18 + cell.value * 0.68,
-              boxShadow: `0 0 ${6 + cell.value * 18}px ${cell.color}`,
-            }}
-          />
-        ))}
-      </div>
-      <div className="mt-4 grid gap-2 text-[0.58rem] uppercase tracking-[0.14em] text-white/34 md:grid-cols-3">
-        <span className="rounded-full border border-cyan-300/20 bg-cyan-300/5 px-3 py-2 text-cyan-100/70">Cyan: smoother flow</span>
-        <span className="rounded-full border border-amber-300/20 bg-amber-300/5 px-3 py-2 text-amber-100/70">Gold: high activity</span>
-        <span className="rounded-full border border-pink-400/20 bg-pink-400/5 px-3 py-2 text-pink-100/70">Pink: negative pressure</span>
+    <section className="rounded-[1.6rem] border border-white/10 bg-white/[0.028] p-4 backdrop-blur-2xl md:rounded-[2rem] md:p-5">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
+        <div>
+          <p className="mono-font text-[0.48rem] uppercase tracking-[0.18em] text-white/38">Market Pressure Grid</p>
+          <p className="mt-2 max-w-4xl text-[0.64rem] leading-5 text-white/42">
+            Cells are sampled from the selected BTC memory range and read left to right, top to bottom. Brightness is calculated from volume and local volatility: 55% volume intensity + 45% volatility. Cyan means smoother flow, gold means high activity, and pink means negative price pressure.
+          </p>
+
+          <div className="mt-3 flex flex-wrap gap-2 text-[0.56rem] uppercase tracking-[0.13em] text-white/36">
+            <span className="rounded-full border border-white/10 bg-black/24 px-2.5 py-1">Order: oldest sample → newest sample</span>
+            <span className="rounded-full border border-white/10 bg-black/24 px-2.5 py-1">Tap cells on mobile</span>
+          </div>
+
+          <div className="mt-5 grid grid-cols-7 gap-1.5 sm:grid-cols-8">
+            {cells.map((cell) => {
+              const isSelected = activeCell?.id === cell.id;
+
+              return (
+                <button
+                  key={cell.id}
+                  type="button"
+                  title={`${cell.label} • pressure ${Math.round(cell.value * 100)}% • volume ${Math.round(cell.volume * 100)}% • volatility ${Math.round(cell.volatility * 100)}%`}
+                  aria-label={`${cell.label}, pressure ${Math.round(cell.value * 100)} percent`}
+                  onClick={() => setSelectedCell(cell)}
+                  className={`h-4 rounded-full border transition duration-300 hover:scale-y-125 focus:outline-none focus:ring-2 focus:ring-white/25 ${
+                    isSelected ? "scale-y-125 border-white/45" : "border-white/5 hover:border-white/20"
+                  }`}
+                  style={{
+                    backgroundColor: cell.color,
+                    opacity: 0.18 + cell.value * 0.68,
+                    boxShadow: `0 0 ${6 + cell.value * 18}px ${cell.color}`,
+                  }}
+                />
+              );
+            })}
+          </div>
+
+          <div className="mt-4 grid gap-2 text-[0.58rem] uppercase tracking-[0.14em] text-white/34 md:grid-cols-3">
+            <span className="rounded-full border border-cyan-300/20 bg-cyan-300/5 px-3 py-2 text-cyan-100/70">Cyan: smoother flow</span>
+            <span className="rounded-full border border-amber-300/20 bg-amber-300/5 px-3 py-2 text-amber-100/70">Gold: high activity</span>
+            <span className="rounded-full border border-pink-400/20 bg-pink-400/5 px-3 py-2 text-pink-100/70">Pink: negative pressure</span>
+          </div>
+        </div>
+
+        <aside className="rounded-[1.25rem] border border-white/10 bg-black/24 p-4">
+          <p className="mono-font text-[0.46rem] uppercase tracking-[0.16em] text-white/34">Selected Cell</p>
+
+          <div className="mt-3 flex items-center gap-2">
+            <span
+              className="h-2.5 w-2.5 rounded-full shadow-[0_0_18px_currentColor]"
+              style={{ backgroundColor: activeCell?.color, color: activeCell?.color }}
+            />
+            <p className="text-sm font-medium text-white/82">{activeCell?.label}</p>
+          </div>
+
+          <div className="mt-4 grid gap-2 text-[0.72rem] text-white/52">
+            <div className="flex justify-between gap-4 border-b border-white/8 pb-2">
+              <span>Pressure</span>
+              <span className="text-white/82">{Math.round((activeCell?.value || 0) * 100)}%</span>
+            </div>
+            <div className="flex justify-between gap-4 border-b border-white/8 pb-2">
+              <span>Volume</span>
+              <span className="text-white/82">{Math.round((activeCell?.volume || 0) * 100)}%</span>
+            </div>
+            <div className="flex justify-between gap-4 border-b border-white/8 pb-2">
+              <span>Volatility</span>
+              <span className="text-white/82">{Math.round((activeCell?.volatility || 0) * 100)}%</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span>Sample</span>
+              <span className="text-white/82">#{(activeCell?.id || 0) + 1}</span>
+            </div>
+          </div>
+
+          <p className="mt-4 text-[0.6rem] leading-5 text-white/34">
+            Desktop users can hover cells. Mobile users can tap a cell to keep its values visible here.
+          </p>
+        </aside>
       </div>
     </section>
   );
@@ -734,9 +789,12 @@ function ResearchBridge() {
       <p className="mt-3 text-sm leading-7 text-white/52">
         The research page explains the mapping from price, volume, volatility, liquidity and risk into orbit, density, scars, flow and visual memory.
       </p>
-      <a href="/research" className="mt-5 inline-flex rounded-full border border-white/12 bg-white px-5 py-3 text-[0.62rem] font-medium uppercase tracking-[0.16em] text-black transition hover:bg-white/85">
-        Open Research
-      </a>
+      <Link
+       to="/research"
+       className="mt-5 inline-flex rounded-full border border-cyan-200/30 bg-cyan-200/10 px-5 py-3 text-[0.62rem] font-medium uppercase tracking-[0.16em] text-cyan-50 shadow-[0_0_28px_rgba(80,231,255,0.12)] transition hover:bg-cyan-200 hover:text-black"
+>
+       Open Research
+    </Link>
     </section>
   );
 }
