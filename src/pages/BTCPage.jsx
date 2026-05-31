@@ -278,33 +278,33 @@ export default function BTCPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[var(--bg)] pt-24 text-white">
+    <div className="relative min-h-screen overflow-hidden bg-[var(--bg)] pt-32 text-white md:pt-36">
       <div className="absolute inset-0 hero-atmosphere opacity-70" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(117,148,255,0.12),transparent_34%),radial-gradient(circle_at_78%_42%,rgba(255,138,42,0.08),transparent_28%),radial-gradient(circle_at_18%_64%,rgba(80,231,255,0.09),transparent_32%)]" />
 
-      <section className="page-padding relative z-10 pb-16">
-        <div className="mx-auto max-w-[1720px]">
+      <section className="page-padding relative z-10 pb-12 md:pb-16">
+        <div className="mx-auto max-w-[1540px]">
           <motion.div
             initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.85, ease: [0.76, 0, 0.24, 1] }}
-            className="mb-5 flex flex-col justify-between gap-4 lg:flex-row lg:items-end"
+            className="mb-5 flex flex-col justify-between gap-4 xl:flex-row xl:items-end"
           >
             <div>
               <p className="label">ECONOGRAPHY / BTC MEMORY ENGINE</p>
-              <h1 className="mt-3 max-w-3xl font-['Inter_Tight',Inter,sans-serif] text-[clamp(1.65rem,3vw,3.05rem)] font-medium leading-[1.03] tracking-[-0.052em]">
+              <h1 className="mt-3 max-w-3xl font-['Inter_Tight',Inter,sans-serif] text-[clamp(1.45rem,2.55vw,2.65rem)] font-medium leading-[1.06] tracking-[-0.048em]">
                 Bitcoin market data becomes a living financial organism.
               </h1>
             </div>
 
-            <div className="max-w-md rounded-[1.7rem] border border-white/10 bg-white/[0.035] p-4 backdrop-blur-2xl">
+            <div className="max-w-md rounded-[1.45rem] border border-white/10 bg-white/[0.035] p-3.5 backdrop-blur-2xl">
               <div className="flex items-center gap-2">
                 <span className={`h-2 w-2 rounded-full ${status === "live" ? "bg-emerald-300" : "bg-amber-300"} shadow-[0_0_18px_currentColor]`} />
                 <p className="mono-font text-[0.48rem] uppercase tracking-[0.18em] text-white/42">
                   {activeHistoricalPreset ? "Historical marker" : status === "syncing" ? "Syncing stream" : status === "live" ? "Stream active" : "Fallback stream"}
                 </p>
               </div>
-              <p className="mt-3 text-sm leading-7 text-white/58">
+              <p className="mt-2.5 text-[0.8rem] leading-6 text-white/58">
                 {activeHistoricalPreset
                   ? `Viewing saved marker ${activeHistoricalPreset.date}. Price, volume, volatility, risk and liquidity are interpreted as a historical memory state.`
                   : "Price, volume, volatility, risk and liquidity are mapped into orbit, density, scars, flow and core pressure."}
@@ -316,22 +316,24 @@ export default function BTCPage() {
             initial={{ opacity: 0, y: 28, scale: 0.99 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.15, duration: 1, ease: [0.76, 0, 0.24, 1] }}
-            className="grid gap-4 lg:grid-cols-[250px_minmax(0,1fr)_270px]"
+            className="grid min-w-0 gap-4 2xl:grid-cols-[250px_minmax(0,1fr)_270px]"
           >
-            <VisualLayersPanel layers={VISUAL_LAYERS} source={effectivePulse.source} status={activeHistoricalPreset ? "historical" : status} updatedTime={updatedTime} historyStatus={activeHistoricalPreset ? "marker" : historyStatus} />
+            <div className="hidden 2xl:block">
+              <VisualLayersPanel layers={VISUAL_LAYERS} source={effectivePulse.source} status={activeHistoricalPreset ? "historical" : status} updatedTime={updatedTime} historyStatus={activeHistoricalPreset ? "marker" : historyStatus} />
+            </div>
 
             <main className="min-w-0">
-              <div className="relative h-[clamp(520px,68vh,720px)] overflow-hidden rounded-t-[2.2rem] border border-b-0 border-white/10 bg-black shadow-[0_0_160px_rgba(139,163,255,0.12)]">
+              <div className="relative h-[clamp(460px,62vh,680px)] min-w-0 overflow-hidden rounded-t-[1.8rem] border border-b-0 border-white/10 bg-black shadow-[0_0_160px_rgba(139,163,255,0.12)] md:rounded-t-[2.2rem]">
                 <BTCOrganismV2 pulse={effectivePulse} history={activeHistoricalPreset ? { points, isLive: false, source: "historical marker" } : btcHistory} />
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(3,4,6,0.02)_46%,rgba(3,4,6,0.70)_100%)]" />
 
-                <div className="absolute left-0 right-0 top-0 z-20 flex min-h-[78px] items-center justify-between gap-4 border-b border-white/10 bg-black/28 px-5 py-3 backdrop-blur-2xl md:px-7">
+                <div className="absolute left-0 right-0 top-0 z-20 flex min-h-[68px] items-center justify-between gap-3 border-b border-white/10 bg-black/28 px-4 py-2.5 backdrop-blur-2xl md:min-h-[74px] md:px-6">
                   <div>
-                    <p className="mono-font text-[0.48rem] uppercase tracking-[0.18em] text-white/40">BTC Memory Organism</p>
-                    <h2 className="system-title mt-1 text-[clamp(1.25rem,2vw,2.1rem)]">{memoryState.label}</h2>
+                    <p className="mono-font text-[0.42rem] uppercase tracking-[0.16em] text-white/40">BTC Memory Organism</p>
+                    <h2 className="system-title mt-1 max-w-[12rem] text-[clamp(1rem,1.65vw,1.65rem)] leading-[1.05] md:max-w-none">{memoryState.label}</h2>
                   </div>
 
-                  <div className="hidden items-center gap-4 text-right lg:flex">
+                  <div className="hidden items-center gap-3 text-right xl:flex">
                     <StageInfo label="Updated" value={updatedTime} />
                     <StageInfo label={memoryMode === "date" && selectedDate ? "Marker" : "Range"} value={activeTimeLabel} />
                     <StageInfo label="Source" value={effectivePulse.source || "unknown"} />
@@ -365,13 +367,18 @@ export default function BTCPage() {
 
               <OrganismMetricsRow metrics={organismMetrics} />
 
-              <div className="mt-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
+              <div className="mt-3 grid gap-3 xl:grid-cols-[1.1fr_0.9fr]">
                 <MemoryTimeline timeline={timeline} compact />
                 <MemoryComposition composition={composition} compact />
               </div>
             </main>
 
-            <MarketSynthesisPanel cards={synthesisCards} memoryState={memoryState} points={points} />
+            <div className="grid gap-4 2xl:hidden">
+              <MarketSynthesisPanel cards={synthesisCards} memoryState={memoryState} points={points} compact />
+            </div>
+            <div className="hidden 2xl:block">
+              <MarketSynthesisPanel cards={synthesisCards} memoryState={memoryState} points={points} />
+            </div>
           </motion.div>
 
           <motion.div
@@ -400,7 +407,7 @@ export default function BTCPage() {
 
 function VisualLayersPanel({ layers, source, status, updatedTime, historyStatus }) {
   return (
-    <aside className="rounded-[2rem] border border-white/10 bg-white/[0.028] p-3 backdrop-blur-2xl lg:min-h-[690px]">
+    <aside className="rounded-[1.6rem] border border-white/10 bg-white/[0.028] p-3 backdrop-blur-2xl 2xl:min-h-[690px]">
       <div className="rounded-[1.45rem] border border-white/10 bg-black/28 p-4">
         <p className="mono-font text-[0.48rem] uppercase tracking-[0.18em] text-white/38">Live Source</p>
         <div className="mt-3 grid grid-cols-2 gap-2.5">
@@ -439,9 +446,9 @@ function VisualLayersPanel({ layers, source, status, updatedTime, historyStatus 
   );
 }
 
-function MarketSynthesisPanel({ cards, memoryState, points }) {
+function MarketSynthesisPanel({ cards, memoryState, points, compact = false }) {
   return (
-    <aside className="rounded-[2rem] border border-white/10 bg-white/[0.028] p-3 backdrop-blur-2xl lg:min-h-[690px]">
+    <aside className={`rounded-[1.6rem] border border-white/10 bg-white/[0.028] p-3 backdrop-blur-2xl ${compact ? "" : "2xl:min-h-[690px]"}`}>
       <div className="mt-3 rounded-[1.45rem] border border-white/10 bg-black/18 p-3">
         <p className="mono-font text-[0.48rem] uppercase tracking-[0.18em] text-white/38">Current Market Reading</p>
         <h2 className="mt-3 text-[1.25rem] font-medium tracking-[-0.03em] text-white/90">Market state: {memoryState.label}</h2>
@@ -451,7 +458,7 @@ function MarketSynthesisPanel({ cards, memoryState, points }) {
         </p>
       </div>
 
-      <div className="mt-3 space-y-2.5">
+      <div className={`mt-3 ${compact ? "grid gap-2 md:grid-cols-2 xl:grid-cols-3" : "space-y-2.5"}`}>
         {cards.map((card) => (
         <article key={card.label} className="rounded-[1.15rem] border border-white/10 bg-black/22 p-3">
             <div className="flex items-start justify-between gap-4">
@@ -467,7 +474,7 @@ function MarketSynthesisPanel({ cards, memoryState, points }) {
         ))}
       </div>
 
-      <div className="mt-4 rounded-[1.45rem] border border-white/10 bg-black/22 p-4">
+      <div className={`mt-4 rounded-[1.45rem] border border-white/10 bg-black/22 p-4 ${compact ? "hidden" : ""}`}>
         <p className="mono-font text-[0.46rem] uppercase tracking-[0.16em] text-white/34">Micro Price Memory</p>
         <Sparkline values={points.map((point) => safeNumber(point.priceNormalized, 0.5))} color="#D8CCFF" height={70} />
       </div>
@@ -477,8 +484,8 @@ function MarketSynthesisPanel({ cards, memoryState, points }) {
 
 function MemoryControlPanel({ selectedRange, memoryMode, selectedDate, pendingDate, todayDate, points, onSelectRange, onChangePendingDate, onApplyDate, onSelectPreset }) {
   return (
-    <section className="rounded-b-[2.2rem] border border-t-0 border-white/10 bg-black/42 px-5 py-4 backdrop-blur-2xl md:px-7">
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_250px] xl:items-stretch">
+    <section className="rounded-b-[1.8rem] border border-t-0 border-white/10 bg-black/42 px-4 py-3 backdrop-blur-2xl md:rounded-b-[2.2rem] md:px-6 md:py-4">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_220px] xl:items-stretch">
         <div className="rounded-[1.25rem] border border-white/8 bg-white/[0.025] p-3">
           <div className="grid gap-3 lg:grid-cols-[180px_minmax(0,1fr)] lg:items-start">
             <div>
@@ -781,8 +788,8 @@ function MiniStatus({ label, value }) {
 function StageInfo({ label, value }) {
   return (
     <div>
-      <p className="mono-font text-[0.46rem] uppercase tracking-[0.16em] text-white/36">{label}</p>
-      <p className="mt-1.5 text-sm capitalize text-white/78">{value}</p>
+      <p className="mono-font text-[0.4rem] uppercase tracking-[0.14em] text-white/36">{label}</p>
+      <p className="mt-1 text-xs capitalize text-white/78">{value}</p>
     </div>
   );
 }
