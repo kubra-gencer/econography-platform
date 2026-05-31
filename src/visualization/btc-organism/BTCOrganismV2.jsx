@@ -1249,19 +1249,17 @@ function MemoryCells({ visualState, points }) {
               document.body.style.cursor = "crosshair";
             }}
             onPointerOut={(event) => {
-              event.stopPropagation();
-              setHovered(null);
+            event.stopPropagation();
+              setHovered((current) => (selected?.id === cell.id ? current : null));
               document.body.style.cursor = "";
-            }}
+              }}
             onPointerDown={(event) => {
-              event.stopPropagation();
-              setSelected((current) => (current?.id === cell.id ? null : cell));
-              setHovered(cell);
-            }}
-            onClick={(event) => {
-              event.stopPropagation();
-              setSelected((current) => (current?.id === cell.id ? null : cell));
-              setHovered(cell);
+            event.stopPropagation();
+            setSelected((current) => {
+              const shouldClose = current?.id === cell.id;
+             setHovered(shouldClose ? null : cell);
+               return shouldClose ? null : cell;
+                });
             }}
           >
             {cell.isRisk ? (
@@ -1901,7 +1899,7 @@ export default function BTCOrganismV2({ pulse, history }) {
   );
 
   return (
-    <div className="relative h-full w-full touch-pan-y overflow-hidden rounded-[32px] bg-[#02040a]">
+    <div className="relative h-full w-full touch-manipulation overflow-hidden rounded-[32px] bg-[#02040a]"> 
       <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(2,4,10,0.04)_40%,rgba(2,4,10,0.92)_100%)]" />
       <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(circle_at_50%_48%,rgba(111,234,255,0.14),transparent_24%),radial-gradient(circle_at_43%_55%,rgba(255,199,106,0.11),transparent_23%),radial-gradient(circle_at_66%_43%,rgba(255,106,213,0.105),transparent_27%),radial-gradient(circle_at_37%_39%,rgba(103,167,255,0.08),transparent_24%)]" />
 
