@@ -47,13 +47,19 @@ const transparency = [
     title: "Live range mode",
     tag: "data-driven",
     text:
-      "When available, the BTC page uses normalized historical data for 1D, 7D and 30D ranges. If the stream fails, fallback simulation is shown clearly.",
+      "When available, the BTC page uses public historical market data for 1D, 7D and 30D ranges. If the request fails or the provider is rate-limited, fallback simulation is shown clearly.",
   },
   {
-    title: "Saved date markers",
-    tag: "interpreted demo",
+    title: "Selected date markers",
+    tag: "historical first",
     text:
-      "Dates such as Apr 7, Jul 10 and Feb 5 are quick-access markers. In this version they use interpreted market states until exact historical fetching is connected.",
+      "Dates such as Apr 7, Jul 10 and Feb 5 are quick-access market states. The system first tries to fetch historical BTC price and volume data for the selected UTC day. If the request fails, it falls back to a clearly labeled interpreted state.",
+  },
+  {
+    title: "Visual interpretation",
+    tag: "mapped layer",
+    text:
+      "The numerical market data is public and data-driven when available. The organism itself is an interpretation layer: orbit, glow, density, scars and flow are visual mappings, not raw market indicators or investment signals.",
   },
   {
     title: "Art Space",
@@ -82,11 +88,12 @@ const siteLayers = [
 ];
 
 const roadmap = [
-  "Connect exact historical date fetching for selected BTC markers.",
-  "Replace interpreted demo curves with verified historical time-series windows.",
+  "Strengthen selected-date fetching with verified UTC windows and source labels.",
+  "Add a small public data-source panel that shows API loaded, fallback or rate-limit status.",
   "Generate exportable artwork snapshots from real market states.",
   "Add richer data such as order-book depth, liquidation flow, ETF flow or macro indicators.",
   "Document the method with reproducible pipeline notes and stronger references.",
+  "Clarify timezone assumptions, especially UTC versus local time, for selected historical dates.",
 ];
 
 export default function ResearchPage() {
@@ -112,7 +119,7 @@ export default function ResearchPage() {
                 A research interface for visual market memory.
               </h1>
               <p className="mt-5 max-w-xl text-[0.92rem] leading-7 text-muted">
-                Econography treats financial data as artistic material. This website tests how BTC market signals can become a live organism, a visual language and a curated art space.
+                Econography treats financial data as artistic material. This website tests how public BTC market data can become a live organism, a visual language and a curated art space while staying clear about what is data-driven and what is interpreted.
               </p>
 
               <div className="mt-6 grid gap-2.5 sm:grid-cols-3">
@@ -236,7 +243,7 @@ export default function ResearchPage() {
             <SplitIntro
               eyebrow="Live vs Interpreted"
               title="The prototype should be honest about what is live and what is curated."
-              text="This matters because the site is both a working demo and a research presentation. Visitors should understand which parts are connected to data and which parts are interpreted as visual examples."
+              text="This matters because the site is both a working demo and a research presentation. Visitors should understand which parts come from public historical BTC data, which parts are fallback states, and which parts are artistic visual mappings."
             />
 
             <div className="mt-7 grid gap-3 lg:grid-cols-3">
@@ -300,7 +307,7 @@ export default function ResearchPage() {
                   ))}
 
                   <p className="pt-2 text-xs leading-6 text-white/36">
-                    Econography is a visual research prototype. It is not financial advice, not a trading signal and not a prediction engine.
+                    Econography is a visual research prototype. It is not financial advice, not a trading signal and not a prediction engine. Historical BTC data may depend on public API availability, UTC date windows and provider limits.
                   </p>
                 </div>
               </div>

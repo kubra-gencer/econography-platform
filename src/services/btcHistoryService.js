@@ -143,15 +143,15 @@ export async function fetchBTCHistoryData(range = "7D", options = {}) {
 }
 
 export async function fetchBTCHistoryByDate(dateValue, windowDays = 1) {
-  const date = new Date(`${dateValue}T12:00:00Z`);
+  const dayStart = new Date(`${dateValue}T00:00:00Z`);
 
-  if (Number.isNaN(date.getTime())) {
+  if (Number.isNaN(dayStart.getTime())) {
     throw new Error(`Invalid BTC historical date: ${dateValue}`);
   }
 
-  const halfWindow = Math.max(0.5, Number(windowDays) || 1) * 24 * 60 * 60 * 1000;
-  const from = Math.floor((date.getTime() - halfWindow) / 1000);
-  const to = Math.floor((date.getTime() + halfWindow) / 1000);
+  const dayCount = Math.max(1, Number(windowDays) || 1);
+  const from = Math.floor(dayStart.getTime() / 1000);
+  const to = Math.floor((dayStart.getTime() + dayCount * 24 * 60 * 60 * 1000) / 1000);
 
   const response = await fetch(
     `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range?vs_currency=usd&from=${from}&to=${to}&precision=full`,
