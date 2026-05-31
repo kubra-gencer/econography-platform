@@ -1188,6 +1188,7 @@ function CoreFlowRibbons({ visualState, points }) {
 
 function MemoryCells({ visualState, points }) {
   const [hovered, setHovered] = useState(null);
+  const [selected, setSelected] = useState(null);
 
   const cells = useMemo(() => {
     const step = Math.max(1, Math.floor(points.length / 58));
@@ -1252,6 +1253,16 @@ function MemoryCells({ visualState, points }) {
               setHovered(null);
               document.body.style.cursor = "";
             }}
+            onPointerDown={(event) => {
+              event.stopPropagation();
+              setSelected((current) => (current?.id === cell.id ? null : cell));
+              setHovered(cell);
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              setSelected((current) => (current?.id === cell.id ? null : cell));
+              setHovered(cell);
+            }}
           >
             {cell.isRisk ? (
               <octahedronGeometry args={[cell.size * 1.1, 1]} />
@@ -1285,11 +1296,13 @@ function MemoryCells({ visualState, points }) {
             </mesh>
           )}
 
-          {hovered?.id === cell.id && (
+          {(hovered?.id === cell.id || selected?.id === cell.id) && (
             <Html center transform={false} zIndexRange={[100, 0]} style={{ pointerEvents: "none", transform: "translate3d(-50%, -118%, 0)" }}>
               <div className="w-[232px] rounded-2xl border border-white/12 bg-[#03050a]/95 px-4 py-3 text-white shadow-[0_18px_60px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="mono-font text-[0.48rem] uppercase tracking-[0.16em] text-white/38">BTC Memory Point</p>
+                  <p className="mono-font text-[0.48rem] uppercase tracking-[0.16em] text-white/38">
+                    {selected?.id === cell.id ? "Selected Memory Point" : "BTC Memory Point"}
+                  </p>
                   <span className="h-2 w-2 rounded-full shadow-[0_0_16px_currentColor]" style={{ backgroundColor: cell.color, color: cell.color }} />
                 </div>
                 <p className="mt-2 text-[0.82rem] font-medium text-white">{formatDate(cell.point.timestamp)}</p>
@@ -1309,6 +1322,9 @@ function MemoryCells({ visualState, points }) {
                       : cell.isRecovery
                       ? "high volume creates warm granular memory density"
                       : "liquidity keeps this point in smooth market flow"}
+                  </p>
+                  <p className="pt-1 text-[0.58rem] text-white/34">
+                    Tap the same point again to close this reading.
                   </p>
                 </div>
               </div>
@@ -1883,7 +1899,7 @@ export default function BTCOrganismV2({ pulse, history }) {
   );
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-[32px] bg-[#02040a]">
+    <div className="relative h-full w-full touch-pan-y overflow-hidden rounded-[32px] bg-[#02040a]">
       <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(2,4,10,0.04)_40%,rgba(2,4,10,0.92)_100%)]" />
       <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(circle_at_50%_48%,rgba(111,234,255,0.14),transparent_24%),radial-gradient(circle_at_43%_55%,rgba(255,199,106,0.11),transparent_23%),radial-gradient(circle_at_66%_43%,rgba(255,106,213,0.105),transparent_27%),radial-gradient(circle_at_37%_39%,rgba(103,167,255,0.08),transparent_24%)]" />
 
@@ -1911,9 +1927,9 @@ export default function BTCOrganismV2({ pulse, history }) {
         <OrbitControls
           enableDamping
           dampingFactor={0.08}
-          rotateSpeed={0.58}
-          zoomSpeed={0.72}
-          panSpeed={0.48}
+          rotateSpeed={0.48}
+          zoomSpeed={0.62}
+          panSpeed={0.38}
           minDistance={2.45}
           maxDistance={8.2}
           maxPolarAngle={Math.PI * 0.92}
