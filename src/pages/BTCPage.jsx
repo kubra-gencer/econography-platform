@@ -1176,8 +1176,16 @@ function buildPulseFromHistoricalPoints(points, selectedDate, preset) {
   if (cleanPoints.length < 2) return null;
 
   const first = cleanPoints[0];
-  const latest = cleanPoints[cleanPoints.length - 1];
-  const price = safeNumber(latest.price, safeNumber(preset?.market?.price, 0));
+  const targetTimestamp = Date.parse(`${selectedDate}T12:00:00Z`);
+  const referencePoint = cleanPoints.reduce((closest, point) => {
+    const pointTimestamp = safeNumber(point.timestamp, 0);
+    const closestTimestamp = safeNumber(closest.timestamp, 0);
+    const pointDistance = Math.abs(pointTimestamp - targetTimestamp);
+    const closestDistance = Math.abs(closestTimestamp - targetTimestamp);
+    return pointDistance < closestDistance ? point : closest;
+  }, cleanPoints[0]);
+
+  const price = safeNumber(referencePoint.price, safeNumber(preset?.market?.price, 0));
   const firstPrice = safeNumber(first.price, price);
   const change24h = firstPrice ? ((price - firstPrice) / firstPrice) * 100 : 0;
   const averageVolume = cleanPoints.reduce((sum, point) => sum + safeRatio(point.volumeNormalized, 0.4), 0) / cleanPoints.length;
@@ -1185,7 +1193,7 @@ function buildPulseFromHistoricalPoints(points, selectedDate, preset) {
   const negativeRatio = cleanPoints.filter((point) => point.direction < 0).length / cleanPoints.length;
   const liquidity = clamp(1 - averageVolatility * 0.68 - negativeRatio * 0.18, 0.08, 0.94);
   const risk = clamp(averageVolatility * 0.72 + negativeRatio * 0.36, 0.06, 0.96);
-  const timestamp = safeNumber(latest.timestamp, Date.parse(`${selectedDate}T12:00:00Z`));
+  const timestamp = safeNumber(referencePoint.timestamp, targetTimestamp);
 
   return {
     price,

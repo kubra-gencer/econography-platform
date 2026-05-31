@@ -53,7 +53,13 @@ const transparency = [
     title: "Selected date markers",
     tag: "historical first",
     text:
-      "Dates such as Apr 7, Jul 10 and Feb 5 are quick-access market states. The system first tries to fetch historical BTC price and volume data for the selected UTC day. If the request fails, it falls back to a clearly labeled interpreted state.",
+      "Dates such as Apr 7, Jul 10 and Feb 5 are quick-access market states. The system first tries to fetch historical BTC price and volume data for the selected UTC day. If the request fails, the interface avoids showing a synthetic BTC price and clearly labels the state as unavailable or visual scaffold.",
+  },
+  {
+    title: "Selected date price",
+    tag: "12:00 UTC reference",
+    text:
+      "For selected dates, the displayed reference price is taken from the historical point closest to 12:00 UTC on that date. This keeps random date inspection consistent and avoids mixing a selected historical day with the current BTC price.",
   },
   {
     title: "Visual interpretation",
@@ -89,7 +95,7 @@ const siteLayers = [
 
 const roadmap = [
   "Strengthen selected-date fetching with verified UTC windows and source labels.",
-  "Add a small public data-source panel that shows API loaded, fallback or rate-limit status.",
+  "Add a small public data-source panel that shows API loaded, loading, unavailable or rate-limit status.",
   "Generate exportable artwork snapshots from real market states.",
   "Add richer data such as order-book depth, liquidation flow, ETF flow or macro indicators.",
   "Document the method with reproducible pipeline notes and stronger references.",
@@ -307,7 +313,7 @@ export default function ResearchPage() {
                   ))}
 
                   <p className="pt-2 text-xs leading-6 text-white/36">
-                    Econography is a visual research prototype. It is not financial advice, not a trading signal and not a prediction engine. Historical BTC data may depend on public API availability, UTC date windows and provider limits.
+                    Econography is a visual research prototype. It is not financial advice, not a trading signal and not a prediction engine. Historical BTC data may depend on public API availability, UTC date windows and provider limits. If selected-date data cannot be loaded, the interface avoids showing a synthetic BTC price.
                   </p>
                 </div>
               </div>
