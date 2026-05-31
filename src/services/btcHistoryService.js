@@ -133,3 +133,46 @@ export async function fetchBTCHistoryData(range = "7D", options = {}) {
     return createFallbackHistory(range, options);
   }
 }
+
+export async function fetchBTCHistoryByDate(dateValue, windowDays = 1) {
+  const date = new Date(`${dateValue}T12:00:00Z`);
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`Invalid BTC historical date: ${dateValue}`);
+  }
+
+  const halfWindow = Math.max(0.5, Number(windowDays) || 1) * 24 * 60 * 60 * 1000;
+  const from = Math.floor((date.getTime() - halfWindow) / 1000);
+  const to = Math.floor((date.getTime() + halfWindow) / 1000);
+
+  const response = await fetch(
+    `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range?vs_currency=usd&from=${from}&to=${to}&precision=full`,
+    {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`BTC historical date request failed: ${response.status}`);
+  }
+
+  const payload = await response.json();
+
+  if (!Array.isArray(payload?.prices) || payload.prices.length === 0) {
+    throw new Error("BTC historical date response did not include prices.");
+  }
+
+  return {
+    source: "coingecko-historical-date",
+    isLive: true,
+    range: dateValue,
+    mode: "historical-date",
+    selectedDate: dateValue,
+    from,
+    to,
+    raw: payload,
+  };
+}

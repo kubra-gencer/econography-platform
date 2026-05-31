@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import BTCOrganismV2 from "../visualization/btc-organism/BTCOrganismV2";
 import FullscreenStage from "../components/visual/FullscreenStage";
 import { fetchBTCMarketData } from "../services/btcService";
-import { fetchBTCHistoryData } from "../services/btcHistoryService";
+import { fetchBTCHistoryByDate, fetchBTCHistoryData } from "../services/btcHistoryService";
 import { normalizeBTCHistoryData } from "../utils/normalizeBTCHistoryData";
 import { normalizeBTCData } from "../utils/normalizeBTCData";
 
@@ -131,6 +131,8 @@ export default function BTCPage() {
   const [selectedDate, setSelectedDate] = useState("");
   const [pendingDate, setPendingDate] = useState("");
   const [btcHistory, setBtcHistory] = useState(null);
+  const [dateHistory, setDateHistory] = useState(null);
+  const [dateHistoryStatus, setDateHistoryStatus] = useState("idle");
   const [historyStatus, setHistoryStatus] = useState("syncing");
   const [status, setStatus] = useState("syncing");
 
@@ -196,39 +198,112 @@ export default function BTCPage() {
     };
   }, [selectedRange]);
 
+  useEffect(() => {
+  let isMounted = true;
+
+  async function loadDateHistory() {
+    if (memoryMode !== "date" || !selectedDate) {
+      setDateHistory(null);
+      setDateHistoryStatus("idle");
+      return;
+    }
+
+    try {
+      setDateHistoryStatus("syncing");
+
+      const historyPayload = await fetchBTCHistoryByDate(selectedDate, 1);
+      const normalizedHistory = normalizeBTCHistoryData(historyPayload, {
+        range: "date",
+        maxPoints: 180,
+      });
+
+      if (!isMounted) return;
+
+      setDateHistory({
+        ...normalizedHistory,
+        selectedDate,
+        source: historyPayload.source || "coingecko-historical-date",
+      });
+
+      setDateHistoryStatus(normalizedHistory.points?.length ? "live" : "fallback");
+    } catch (error) {
+      console.warn("BTC selected date history failed:", error);
+      if (!isMounted) return;
+      setDateHistory(null);
+      setDateHistoryStatus("fallback");
+    }
+  }
+
+  loadDateHistory();
+
+  return () => {
+    isMounted = false;
+  };
+}, [memoryMode, selectedDate]);
+
   const activeHistoricalPreset = useMemo(() => {
     if (memoryMode !== "date" || !selectedDate) return null;
     return HISTORICAL_PRESETS.find((preset) => preset.date === selectedDate) || null;
   }, [memoryMode, selectedDate]);
 
   const effectivePulse = useMemo(() => {
-    if (!activeHistoricalPreset) return pulse;
+  if (memoryMode !== "date" || !selectedDate) return pulse;
 
+  const realDatePulse = buildPulseFromHistoricalPoints(dateHistory?.points, selectedDate, activeHistoricalPreset);
+
+  if (realDatePulse) {
     return {
       ...pulse,
-      ...activeHistoricalPreset.market,
-      lastUpdatedAt: Math.floor(new Date(`${activeHistoricalPreset.date}T12:00:00Z`).getTime() / 1000),
+      ...realDatePulse,
     };
-  }, [activeHistoricalPreset, pulse]);
+  }
+
+  if (!activeHistoricalPreset) {
+    return {
+      ...pulse,
+      date: selectedDate,
+      markerDate: selectedDate,
+      markerLabel: "Custom Date",
+      source: "selected date fallback",
+      isLive: false,
+      lastUpdatedAt: Math.floor(new Date(`${selectedDate}T12:00:00Z`).getTime() / 1000),
+    };
+  }
+
+  return {
+    ...pulse,
+    ...activeHistoricalPreset.market,
+    date: activeHistoricalPreset.date,
+    markerDate: activeHistoricalPreset.date,
+    markerLabel: activeHistoricalPreset.label,
+    source: "historical marker fallback",
+    isLive: false,
+    lastUpdatedAt: Math.floor(new Date(`${activeHistoricalPreset.date}T12:00:00Z`).getTime() / 1000),
+  };
+}, [activeHistoricalPreset, dateHistory, memoryMode, pulse, selectedDate]);
 
   const points = useMemo(() => {
-    if (activeHistoricalPreset) {
-      return createFallbackSeries(effectivePulse);
-    }
-
-    const rawPoints = Array.isArray(btcHistory?.points) ? btcHistory.points : [];
-    if (rawPoints.length) return rawPoints;
-
+  if (memoryMode === "date" && selectedDate) {
+    const datePoints = Array.isArray(dateHistory?.points) ? dateHistory.points : [];
+    if (datePoints.length) return datePoints;
     return createFallbackSeries(effectivePulse);
-  }, [activeHistoricalPreset, btcHistory, effectivePulse]);
+  }
+
+  const rawPoints = Array.isArray(btcHistory?.points) ? btcHistory.points : [];
+  if (rawPoints.length) return rawPoints;
+
+  return createFallbackSeries(effectivePulse);
+}, [btcHistory, dateHistory, effectivePulse, memoryMode, selectedDate]);
 
   const updatedTime = useMemo(() => {
-    const timestamp = safeNumber(effectivePulse.lastUpdatedAt, Date.now() / 1000);
-    return new Date(timestamp * 1000).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }, [effectivePulse.lastUpdatedAt]);
+  if (memoryMode === "date" && selectedDate) return formatReadableDate(selectedDate);
+
+  const timestamp = safeNumber(effectivePulse.lastUpdatedAt, Date.now() / 1000);
+  return new Date(timestamp * 1000).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}, [effectivePulse.lastUpdatedAt, memoryMode, selectedDate]);
 
   const todayDate = useMemo(() => {
     const now = new Date();
@@ -240,7 +315,7 @@ export default function BTCPage() {
   const organismMetrics = useMemo(() => buildOrganismMetrics(effectivePulse, points), [effectivePulse, points]);
   const composition = useMemo(() => buildComposition(effectivePulse), [effectivePulse]);
   const timeline = useMemo(() => buildTimeline(points), [points]);
-  const activeTimeLabel = memoryMode === "date" && selectedDate ? selectedDate : selectedRange;
+  const activeTimeLabel = memoryMode === "date" && selectedDate ? formatReadableDate(selectedDate) : selectedRange;
 
   const btcLegend = useMemo(
     () => [
@@ -301,13 +376,13 @@ export default function BTCPage() {
               <div className="flex items-center gap-2">
                 <span className={`h-2 w-2 rounded-full ${status === "live" ? "bg-emerald-300" : "bg-amber-300"} shadow-[0_0_18px_currentColor]`} />
                 <p className="mono-font text-[0.48rem] uppercase tracking-[0.18em] text-white/42">
-                  {activeHistoricalPreset ? "Historical marker" : status === "syncing" ? "Syncing stream" : status === "live" ? "Stream active" : "Fallback stream"}
+                  {memoryMode === "date" && selectedDate ? (dateHistoryStatus === "live" ? "Historical data loaded" : dateHistoryStatus === "syncing" ? "Loading historical data" : "Historical fallback") : status === "syncing" ? "Syncing stream" : status === "live" ? "Stream active" : "Fallback stream"}
                 </p>
               </div>
               <p className="mt-2.5 text-[0.8rem] leading-6 text-white/58">
-                {activeHistoricalPreset
-                  ? `Viewing saved marker ${activeHistoricalPreset.date}. Price, volume, volatility, risk and liquidity are interpreted as a historical memory state.`
-                  : "Price, volume, volatility, risk and liquidity are mapped into orbit, density, scars, flow and core pressure."}
+                {memoryMode === "date" && selectedDate
+  ? `Viewing ${formatReadableDate(selectedDate)}. BTC historical data is fetched for the selected date when available; fallback interpretation is used only if the historical request fails.`
+  : "Price, volume, volatility, risk and liquidity are mapped into orbit, density, scars, flow and core pressure."}
               </p>
             </div>
           </motion.div>
@@ -319,12 +394,25 @@ export default function BTCPage() {
             className="grid min-w-0 gap-4 2xl:grid-cols-[250px_minmax(0,1fr)_270px]"
           >
             <div className="hidden 2xl:block">
-              <VisualLayersPanel layers={VISUAL_LAYERS} source={effectivePulse.source} status={activeHistoricalPreset ? "historical" : status} updatedTime={updatedTime} historyStatus={activeHistoricalPreset ? "marker" : historyStatus} />
+              <VisualLayersPanel
+                layers={VISUAL_LAYERS}
+                source={effectivePulse.source}
+                status={memoryMode === "date" && selectedDate ? "historical" : status}
+                updatedTime={updatedTime}
+                historyStatus={memoryMode === "date" && selectedDate ? dateHistoryStatus : historyStatus}
+              />
             </div>
 
             <main className="min-w-0">
               <div className="relative h-[clamp(460px,62vh,680px)] min-w-0 overflow-hidden rounded-t-[1.8rem] border border-b-0 border-white/10 bg-black shadow-[0_0_160px_rgba(139,163,255,0.12)] md:rounded-t-[2.2rem]">
-                <BTCOrganismV2 pulse={effectivePulse} history={activeHistoricalPreset ? { points, isLive: false, source: "historical marker" } : btcHistory} />
+                <BTCOrganismV2
+                  pulse={effectivePulse}
+                  history={
+                    memoryMode === "date" && selectedDate
+                      ? { points, isLive: dateHistoryStatus === "live", source: dateHistory?.source || "selected historical date" }
+                      : btcHistory
+                  }
+                />
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(3,4,6,0.02)_46%,rgba(3,4,6,0.70)_100%)]" />
 
                 <div className="absolute left-0 right-0 top-0 z-20 flex min-h-[68px] items-center justify-between gap-3 border-b border-white/10 bg-black/28 px-4 py-2.5 backdrop-blur-2xl md:min-h-[74px] md:px-6">
@@ -343,7 +431,14 @@ export default function BTCPage() {
                       triggerLabel="Expand Organism"
                       legend={btcLegend}
                     >
-                      <BTCOrganismV2 pulse={effectivePulse} history={activeHistoricalPreset ? { points, isLive: false, source: "historical marker" } : btcHistory} />
+                      <BTCOrganismV2
+                        pulse={effectivePulse}
+                        history={
+                          memoryMode === "date" && selectedDate
+                            ? { points, isLive: dateHistoryStatus === "live", source: dateHistory?.source || "selected historical date" }
+                            : btcHistory
+                        }
+                      />
                     </FullscreenStage>
                   </div>
                 </div>
@@ -356,6 +451,7 @@ export default function BTCPage() {
                 pendingDate={pendingDate}
                 todayDate={todayDate}
                 points={points}
+                dateHistoryStatus={dateHistoryStatus}
                 onSelectRange={(range) => {
                   setMemoryMode("range");
                   setSelectedRange(range);
@@ -454,7 +550,7 @@ function MarketSynthesisPanel({ cards, memoryState, points, compact = false }) {
         <h2 className="mt-3 text-[1.25rem] font-medium tracking-[-0.03em] text-white/90">Market state: {memoryState.label}</h2>
         <p className="mt-2 text-xs leading-6 text-white/46">{memoryState.tone}</p>
         <p className="mt-2 text-[0.6rem] leading-5 text-white/34">
-          Live range sparklines use normalized BTC history when available. Saved date markers use interpreted demo curves until exact historical fetching is connected.
+          Live range and selected-date sparklines use normalized BTC history when available. Fallback simulation appears only if the historical request fails.
         </p>
       </div>
 
@@ -482,7 +578,7 @@ function MarketSynthesisPanel({ cards, memoryState, points, compact = false }) {
   );
 }
 
-function MemoryControlPanel({ selectedRange, memoryMode, selectedDate, pendingDate, todayDate, points, onSelectRange, onChangePendingDate, onApplyDate, onSelectPreset }) {
+function MemoryControlPanel({ selectedRange, memoryMode, selectedDate, pendingDate, todayDate, points, dateHistoryStatus, onSelectRange, onChangePendingDate, onApplyDate, onSelectPreset }) {
   return (
     <section className="rounded-b-[1.8rem] border border-t-0 border-white/10 bg-black/42 px-4 py-3 backdrop-blur-2xl md:rounded-b-[2.2rem] md:px-6 md:py-4">
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_220px] xl:items-stretch">
@@ -510,6 +606,11 @@ function MemoryControlPanel({ selectedRange, memoryMode, selectedDate, pendingDa
 
             <div className="border-t border-white/8 pt-3 lg:border-l lg:border-t-0 lg:pl-3 lg:pt-0">
               <p className="mono-font text-[0.44rem] uppercase tracking-[0.15em] text-white/34">Saved Date Markers</p>
+              <p className="mt-1 text-[0.58rem] leading-4 text-white/34">
+                {memoryMode === "date" && selectedDate
+                  ? `Selected: ${formatReadableDate(selectedDate)}`
+                  : "No saved date selected yet."}
+              </p>
 
               <div className="mt-2 grid gap-2 sm:grid-cols-[minmax(170px,0.95fr)_auto] sm:items-center">
                 <label className="flex min-w-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-2.5 py-1.5 text-[0.48rem] uppercase tracking-[0.1em] text-white/44">
@@ -552,7 +653,7 @@ function MemoryControlPanel({ selectedRange, memoryMode, selectedDate, pendingDa
               </div>
 
               <p className="mt-2 text-[0.55rem] leading-4 text-white/28">
-                Future dates are disabled. Saved markers are quick access dates; exact historical fetching will be connected later.
+                Future dates are disabled. Saved markers fetch historical BTC data first; fallback interpretation is used only if the historical request fails.
               </p>
             </div>
           </div>
@@ -562,7 +663,12 @@ function MemoryControlPanel({ selectedRange, memoryMode, selectedDate, pendingDa
           <p className="mono-font text-[0.42rem] uppercase tracking-[0.15em] text-white/32">Active Memory</p>
           <div className="mt-2 space-y-1.5">
             <p className="text-white/60">{points.length} memory points</p>
-            <p>{memoryMode === "date" && selectedDate ? `Marker: ${selectedDate}` : `Range: ${selectedRange}`}</p>
+            <p>{memoryMode === "date" && selectedDate ? `Date: ${formatReadableDate(selectedDate)}` : `Range: ${selectedRange}`}</p>
+            {memoryMode === "date" && selectedDate && (
+              <p className="rounded-full border border-cyan-200/15 bg-cyan-200/8 px-2.5 py-1 text-[0.56rem] uppercase tracking-[0.12em] text-cyan-50/70">
+                Historical data: {dateHistoryStatus === "live" ? "API loaded" : dateHistoryStatus === "syncing" ? "loading" : "fallback"}
+              </p>
+            )}
             <p className="text-white/34">Hover on desktop or tap on mobile for local price, volume and volatility.</p>
           </div>
         </aside>
@@ -1019,7 +1125,39 @@ function buildTimeline(points) {
     };
   });
 }
+function buildPulseFromHistoricalPoints(points, selectedDate, preset) {
+  const cleanPoints = Array.isArray(points) ? points.filter((point) => Number.isFinite(Number(point.price))) : [];
+  if (cleanPoints.length < 2) return null;
 
+  const first = cleanPoints[0];
+  const latest = cleanPoints[cleanPoints.length - 1];
+  const price = safeNumber(latest.price, preset?.market?.price || 0);
+  const firstPrice = safeNumber(first.price, price);
+  const change24h = firstPrice ? ((price - firstPrice) / firstPrice) * 100 : 0;
+  const averageVolume = cleanPoints.reduce((sum, point) => sum + safeRatio(point.volumeNormalized, 0.4), 0) / cleanPoints.length;
+  const averageVolatility = cleanPoints.reduce((sum, point) => sum + safeRatio(point.localVolatility, 0.3), 0) / cleanPoints.length;
+  const negativeRatio = cleanPoints.filter((point) => point.direction < 0).length / cleanPoints.length;
+  const liquidity = clamp(1 - averageVolatility * 0.68 - negativeRatio * 0.18, 0.08, 0.94);
+  const risk = clamp(averageVolatility * 0.72 + negativeRatio * 0.36, 0.06, 0.96);
+  const timestamp = safeNumber(latest.timestamp, Date.parse(`${selectedDate}T12:00:00Z`));
+
+  return {
+    price,
+    change24h,
+    volume24h: preset?.market?.volume24h || price * 340000,
+    volume: clamp(averageVolume, 0.05, 0.95),
+    volatility: clamp(averageVolatility, 0.05, 0.95),
+    risk,
+    liquidity,
+    health: clamp(1 - risk * 0.52 + liquidity * 0.34, 0.08, 0.96),
+    date: selectedDate,
+    markerDate: selectedDate,
+    markerLabel: preset?.label || "Custom Date",
+    source: "coingecko-historical-date",
+    isLive: true,
+    lastUpdatedAt: Math.floor(timestamp / 1000),
+  };
+}
 function createFallbackSeries(pulse = {}) {
   const basePrice = safeNumber(pulse.price, 107034);
   const change = safeNumber(pulse.change24h, 0);
@@ -1028,6 +1166,10 @@ function createFallbackSeries(pulse = {}) {
   const volatility = safeRatio(pulse.volatility, 0.32);
   const volume = safeRatio(pulse.volume, 0.45);
   const source = String(pulse.source || "").toLowerCase();
+
+  const markerDateValue = pulse.date || pulse.markerDate || pulse.selectedDate;
+  const markerTimestamp = markerDateValue ? Date.parse(`${markerDateValue}T12:00:00Z`) : NaN;
+  const baseTimestamp = Number.isFinite(markerTimestamp) ? markerTimestamp : Date.now();
 
   const isHistoricalMarker = source.includes("historical");
   const isFracture = isHistoricalMarker && risk > 0.86 && liquidity < 0.22;
@@ -1069,7 +1211,7 @@ function createFallbackSeries(pulse = {}) {
       index,
       progress,
       price: basePrice * (0.91 + priceNormalized * 0.18),
-      timestamp: Date.now() - (119 - index) * 60 * 60 * 1000,
+      timestamp: baseTimestamp - (119 - index) * 60 * 60 * 1000,
       direction: priceNormalized >= previousShape ? 1 : -1,
       priceNormalized,
       volumeNormalized: clamp(0.16 + volume * 0.55 + participationWave * 0.26),
@@ -1086,6 +1228,13 @@ function normalizeValues(values) {
   const max = Math.max(...clean);
   if (max === min) return clean.map(() => 0.5);
   return clean.map((value) => clamp((value - min) / (max - min)));
+}
+
+function formatReadableDate(value) {
+  if (!value) return "No date";
+  const date = new Date(`${value}T12:00:00Z`);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
 }
 
 function formatTimelineLabel(timestamp, fallbackIndex) {
