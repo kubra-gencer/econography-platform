@@ -225,12 +225,12 @@ export default function BTCPage() {
         source: historyPayload.source || "coingecko-historical-date",
       });
 
-      setDateHistoryStatus(normalizedHistory.points?.length ? "live" : "fallback");
+      setDateHistoryStatus(normalizedHistory.points?.length ? "live" : "unavailable");
     } catch (error) {
       console.warn("BTC selected date history failed:", error);
       if (!isMounted) return;
       setDateHistory(null);
-      setDateHistoryStatus("fallback");
+      setDateHistoryStatus("unavailable");
     }
   }
 
@@ -278,12 +278,18 @@ export default function BTCPage() {
   }
 
   return {
-    ...pulse,
-    ...activeHistoricalPreset.market,
+    price: 0,
+    change24h: 0,
+    volume24h: 0,
+    volume: safeRatio(activeHistoricalPreset.market?.volume, 0.42),
+    volatility: safeRatio(activeHistoricalPreset.market?.volatility, 0.36),
+    risk: safeRatio(activeHistoricalPreset.market?.risk, 0.38),
+    liquidity: safeRatio(activeHistoricalPreset.market?.liquidity, 0.5),
+    health: safeRatio(activeHistoricalPreset.market?.health, 0.58),
     date: activeHistoricalPreset.date,
     markerDate: activeHistoricalPreset.date,
     markerLabel: activeHistoricalPreset.label,
-    source: "historical marker fallback",
+    source: "historical marker unavailable",
     isLive: false,
     lastUpdatedAt: Math.floor(new Date(`${activeHistoricalPreset.date}T12:00:00Z`).getTime() / 1000),
   };
@@ -395,13 +401,17 @@ export default function BTCPage() {
   } shadow-[0_0_18px_currentColor]`}
 />
                 <p className="mono-font text-[0.48rem] uppercase tracking-[0.18em] text-white/42">
-                  {memoryMode === "date" && selectedDate ? (dateHistoryStatus === "live" ? "Historical data loaded" : dateHistoryStatus === "syncing" ? "Loading historical data" : "Historical fallback") : status === "syncing" ? "Syncing stream" : status === "live" ? "Stream active" : "Fallback stream"}
+                  {memoryMode === "date" && selectedDate ? (dateHistoryStatus === "live" ? "Historical data loaded" : dateHistoryStatus === "syncing" ? "Loading historical data" : "Historical data unavailable") : status === "syncing" ? "Syncing stream" : status === "live" ? "Stream active" : "Fallback stream"}
                 </p>
               </div>
               <p className="mt-2.5 text-[0.8rem] leading-6 text-white/58">
                 {memoryMode === "date" && selectedDate
-  ? `Viewing ${formatReadableDate(selectedDate)}. BTC historical data is fetched for the selected date when available; fallback interpretation is used only if the historical request fails.`
-  : "Price, volume, volatility, risk and liquidity are mapped into orbit, density, scars, flow and core pressure."}
+                  ? dateHistoryStatus === "live"
+                    ? `Viewing ${formatReadableDate(selectedDate)}. Price, volume and timeline points are generated from public historical BTC market data for the selected UTC day.`
+                    : dateHistoryStatus === "syncing"
+                    ? `Loading public historical BTC data for ${formatReadableDate(selectedDate)}.`
+                    : `Historical BTC data could not be loaded for ${formatReadableDate(selectedDate)}. No synthetic price is shown for this selected date.`
+                  : "Price, volume, volatility, risk and liquidity are mapped into orbit, density, scars, flow and core pressure."}
               </p>
             </div>
           </motion.div>
@@ -502,7 +512,11 @@ export default function BTCPage() {
             transition={{ delay: 0.3, duration: 0.9, ease: [0.76, 0, 0.24, 1] }}
             className="mt-4"
           >
-            <FlowIntensityMap points={points} pulse={effectivePulse} />
+            <FlowIntensityMap
+              points={points}
+              pulse={effectivePulse}
+              dataStatus={memoryMode === "date" && selectedDate ? dateHistoryStatus : historyStatus}
+            />
           </motion.div>
 
           <motion.div
@@ -569,7 +583,7 @@ function MarketSynthesisPanel({ cards, memoryState, points, compact = false }) {
         <h2 className="mt-3 text-[1.25rem] font-medium tracking-[-0.03em] text-white/90">Market state: {memoryState.label}</h2>
         <p className="mt-2 text-xs leading-6 text-white/46">{memoryState.tone}</p>
         <p className="mt-2 text-[0.6rem] leading-5 text-white/34">
-          Live range and selected-date sparklines use normalized BTC history when available. Fallback simulation appears only if the historical request fails.
+          Live range and selected-date sparklines use normalized BTC history when available. If selected-date data cannot be loaded, the interface avoids showing a synthetic price.
         </p>
       </div>
 
@@ -672,7 +686,7 @@ function MemoryControlPanel({ selectedRange, memoryMode, selectedDate, pendingDa
               </div>
 
               <p className="mt-2 text-[0.55rem] leading-4 text-white/28">
-                Future dates are disabled. Saved markers fetch historical BTC data first; fallback interpretation is used only if the historical request fails.
+                Future dates are disabled. Any selected date fetches public historical BTC data first. If the request fails, no synthetic price is shown.
               </p>
             </div>
           </div>
@@ -681,11 +695,15 @@ function MemoryControlPanel({ selectedRange, memoryMode, selectedDate, pendingDa
         <aside className="rounded-[1.25rem] border border-white/8 bg-white/[0.025] p-3 text-[0.62rem] leading-5 text-white/42">
           <p className="mono-font text-[0.42rem] uppercase tracking-[0.15em] text-white/32">Active Memory</p>
           <div className="mt-2 space-y-1.5">
-            <p className="text-white/60">{points.length} memory points</p>
+            <p className="text-white/60">
+              {memoryMode === "date" && dateHistoryStatus === "unavailable"
+                ? "visual scaffold only"
+                : `${points.length} memory points`}
+            </p>
             <p>{memoryMode === "date" && selectedDate ? `Date: ${formatReadableDate(selectedDate)}` : `Range: ${selectedRange}`}</p>
             {memoryMode === "date" && selectedDate && (
               <p className="rounded-full border border-cyan-200/15 bg-cyan-200/8 px-2.5 py-1 text-[0.56rem] uppercase tracking-[0.12em] text-cyan-50/70">
-                Historical data: {dateHistoryStatus === "live" ? "API loaded" : dateHistoryStatus === "syncing" ? "loading" : "fallback"}
+                Historical data: {dateHistoryStatus === "live" ? "API loaded" : dateHistoryStatus === "syncing" ? "loading" : "unavailable"}
               </p>
             )}
             <p className="text-white/34">Hover on desktop or tap on mobile for local price, volume and volatility.</p>
@@ -720,7 +738,7 @@ function MemoryTimeline({ timeline, compact = false }) {
     <section className={`rounded-[2rem] border border-white/10 bg-white/[0.028] backdrop-blur-2xl ${compact ? "p-4" : "p-5"}`}>
       <p className="mono-font text-[0.48rem] uppercase tracking-[0.18em] text-white/38">Sampled Price Memories</p>
       <p className="mt-2 text-[0.6rem] leading-5 text-white/38">
-        These values are selected sample prices from the active memory range. They show how the organism remembers price movement over time, not official daily open or close prices.
+        These values are selected sample prices from the active memory range when historical data is available. If data cannot be loaded, the timeline avoids showing a synthetic BTC price.
       </p>
       <div className={`${compact ? "mt-3 space-y-2" : "mt-5 space-y-3"}`}>
         {timeline.map((item) => (
@@ -783,7 +801,7 @@ function MemoryComposition({ composition, compact = false }) {
     </section>
   );
 }
-function FlowIntensityMap({ points, pulse }) {
+function FlowIntensityMap({ points, pulse, dataStatus = "live" }) {
   const [selectedCell, setSelectedCell] = useState(null);
 
   const cells = useMemo(() => {
@@ -806,6 +824,9 @@ function FlowIntensityMap({ points, pulse }) {
   }, [points, pulse]);
 
   const activeCell = selectedCell ?? cells[0];
+  const isDataUnavailable =
+    dataStatus === "unavailable" ||
+    (Array.isArray(points) && points.length > 0 && points.every((pt) => typeof pt.price === "undefined" || pt.price === 0));
 
   return (
     <section className="rounded-[1.6rem] border border-white/10 bg-white/[0.028] p-4 backdrop-blur-2xl md:rounded-[2rem] md:p-5">
@@ -813,11 +834,15 @@ function FlowIntensityMap({ points, pulse }) {
         <div>
           <p className="mono-font text-[0.48rem] uppercase tracking-[0.18em] text-white/38">Market Pressure Grid</p>
           <p className="mt-2 max-w-4xl text-[0.64rem] leading-5 text-white/42">
-            Cells are sampled from the selected BTC memory range and read left to right, top to bottom. Brightness is calculated from volume and local volatility: 55% volume intensity + 45% volatility. Cyan means smoother flow, gold means high activity, and pink means negative price pressure.
+            {isDataUnavailable
+              ? "Historical data could not be loaded for the selected date, so this grid is kept as a non-price visual scaffold. No synthetic BTC price is shown."
+              : "Cells are sampled from the selected BTC memory range and read left to right, top to bottom. Brightness is calculated from volume and local volatility: 55% volume intensity + 45% volatility. Cyan means smoother flow, gold means high activity, and pink means negative price pressure."}
           </p>
 
           <div className="mt-3 flex flex-wrap gap-2 text-[0.56rem] uppercase tracking-[0.13em] text-white/36">
-            <span className="rounded-full border border-white/10 bg-black/24 px-2.5 py-1">Order: oldest sample → newest sample</span>
+            <span className="rounded-full border border-white/10 bg-black/24 px-2.5 py-1">
+              {isDataUnavailable ? "Mode: visual scaffold" : "Order: oldest sample → newest sample"}
+            </span>
             <span className="rounded-full border border-white/10 bg-black/24 px-2.5 py-1">Tap cells on mobile</span>
           </div>
 
@@ -902,7 +927,7 @@ function SystemInterpretation({ memoryState, pulse }) {
       <p className="mt-4 text-xs leading-6 text-white/38">
   {safeNumber(pulse.price, 0) > 0
     ? `BTC price reference is ${formatCurrency(pulse.price)}.`
-    : "BTC price reference is waiting for historical data."} This page treats market data as visual memory, not as financial advice or a trading signal.
+    : "BTC price reference is unavailable until public historical data loads."} This page treats market data as visual memory, not as financial advice or a trading signal.
 </p>
     </section>
   );
@@ -1041,8 +1066,8 @@ function buildSynthesisCards(pulse, points) {
   return [
     {
   label: "Price Reference",
-  value: safeNumber(pulse.price, 0) > 0 ? formatCurrency(pulse.price) : "Historical data loading",
-  caption: safeNumber(pulse.price, 0) > 0 ? formatPercent(pulse.change24h) : "waiting for API",
+  value: safeNumber(pulse.price, 0) > 0 ? formatCurrency(pulse.price) : "Historical data unavailable",
+  caption: safeNumber(pulse.price, 0) > 0 ? formatPercent(pulse.change24h) : "no synthetic price",
   color: safeNumber(pulse.change24h) >= 0 ? "#FFD36A" : "#FF3D6E",
   sparkline: series,
 },
