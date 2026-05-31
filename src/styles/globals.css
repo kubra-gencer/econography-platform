@@ -1,0 +1,677 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Inter+Tight:wght@400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+:root {
+  --bg: #030406;
+  --bg-2: #07090d;
+
+  --surface: rgba(255, 255, 255, 0.032);
+  --surface-strong: rgba(255, 255, 255, 0.06);
+
+  --line: rgba(255, 255, 255, 0.078);
+  --line-strong: rgba(255, 255, 255, 0.15);
+
+  --text: #f4f1ea;
+  --muted: rgba(244, 241, 234, 0.58);
+  --dim: rgba(244, 241, 234, 0.34);
+
+  --blue: #8ba3ff;
+  --gold: #ffcc82;
+  --risk: #ff6a6a;
+  --green: #91f4c6;
+
+  --ease: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 72% 18%, rgba(139, 163, 255, 0.1), transparent 32%),
+    radial-gradient(circle at 20% 88%, rgba(255, 204, 130, 0.04), transparent 28%),
+    linear-gradient(180deg, #030406 0%, #06080c 48%, #030406 100%);
+  color: var(--text);
+  font-family: "Inter", sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -2;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 112px 112px;
+  opacity: 0.22;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.03;
+  background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+  mix-blend-mode: soft-light;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(139, 163, 255, 0.22);
+}
+
+/* Typography */
+
+.display-font {
+  font-family: "Instrument Serif", serif;
+  font-weight: 400;
+}
+
+.system-font {
+  font-family: "Inter Tight", "Inter", sans-serif;
+}
+
+.mono-font {
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.hero-title {
+  font-family: "Instrument Serif", serif;
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+.page-title {
+  font-family: "Inter Tight", "Inter", sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+.system-title {
+  font-family: "Inter Tight", "Inter", sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+.text-muted {
+  color: var(--muted);
+}
+
+.text-dim {
+  color: var(--dim);
+}
+
+.label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.54rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* Layout */
+
+.site-main {
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.page-padding {
+  padding-left: clamp(22px, 4vw, 68px);
+  padding-right: clamp(22px, 4vw, 68px);
+}
+
+/* Surfaces */
+
+.glass-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.022));
+  border: 1px solid var(--line);
+  backdrop-filter: blur(24px);
+  box-shadow:
+    0 24px 90px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.visual-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.042), rgba(255, 255, 255, 0.018));
+  border: 1px solid var(--line);
+  backdrop-filter: blur(24px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.glow-blue {
+  box-shadow:
+    0 0 160px rgba(139, 163, 255, 0.1),
+    inset 0 0 90px rgba(255, 255, 255, 0.018);
+}
+
+.hero-atmosphere {
+  background:
+    radial-gradient(circle at 52% 46%, rgba(139, 163, 255, 0.085), transparent 48%),
+    radial-gradient(circle at 76% 35%, rgba(255, 204, 130, 0.04), transparent 30%);
+}
+
+.hairline {
+  height: 1px;
+  width: 100%;
+  background: var(--line);
+}
+
+/* Range controls */
+
+input[type="range"] {
+  appearance: none;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  background: var(--text);
+  box-shadow: 0 0 28px rgba(139, 163, 255, 0.6);
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  /* =========================================================
+   FINAL POLISH LAYOUT SYSTEM
+   Shared structure for cinematic page layouts
+========================================================= */
+
+.experience-page {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+  color: white;
+  padding-top: calc(var(--nav-height) + 72px);
+}
+
+.experience-section {
+  position: relative;
+  z-index: 10;
+}
+
+.experience-inner {
+  width: min(100%, 1520px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(28px, 4vw, 56px);
+  padding-bottom: clamp(72px, 8vw, 128px);
+}
+
+.experience-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(340px, 1.12fr);
+  gap: clamp(28px, 5vw, 72px);
+  align-items: end;
+}
+
+.experience-copy {
+  max-width: 760px;
+}
+
+.experience-title {
+  margin-top: 24px;
+  max-width: 880px;
+  font-family: "Inter Tight", "Inter", sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.052em;
+  line-height: 1.02;
+  font-size: clamp(2.45rem, 4.4vw, 5.15rem);
+  text-wrap: balance;
+}
+
+.experience-description {
+  max-width: 680px;
+  color: var(--muted);
+  font-size: clamp(0.95rem, 1.05vw, 1.08rem);
+  line-height: 1.85;
+  letter-spacing: -0.015em;
+}
+
+.experience-card-grid {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.experience-stage {
+  position: relative;
+  height: clamp(600px, 66vh, 780px);
+  overflow: hidden;
+  border-radius: 2.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: black;
+  box-shadow:
+    0 0 140px rgba(139, 163, 255, 0.1),
+    inset 0 0 90px rgba(255, 255, 255, 0.02);
+}
+
+.stage-overlay-soft {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at center,
+      transparent 0%,
+      rgba(3, 4, 6, 0.04) 46%,
+      rgba(3, 4, 6, 0.72) 100%
+    );
+}
+
+.stage-top-bar {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 76px;
+  padding: 14px 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(24px);
+}
+
+.stage-bottom-bar {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(24px);
+}
+
+.stage-reading-grid {
+  display: grid;
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.stage-reading-grid.four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.stage-reading-grid.two {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+}
+
+.stage-reading-cell {
+  background: rgba(0, 0, 0, 0.42);
+  padding: 18px;
+}
+
+.stage-stats {
+  display: flex;
+  gap: 34px;
+  text-align: right;
+}
+
+.polish-metric-card {
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.028);
+  padding: 16px;
+}
+
+.polish-metric-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.polish-metric-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.46rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.polish-metric-value {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: white;
+}
+
+.polish-metric-text {
+  margin-top: 12px;
+  font-size: 0.76rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+@media (max-width: 1080px) {
+  .experience-page {
+    padding-top: calc(var(--nav-height) + 44px);
+  }
+
+  .experience-hero {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .experience-title {
+    font-size: clamp(2.35rem, 8vw, 4.8rem);
+  }
+
+  .stage-stats {
+    display: none;
+  }
+
+  .experience-stage {
+    height: clamp(560px, 64vh, 720px);
+  }
+}
+
+@media (max-width: 760px) {
+  .experience-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .experience-stage {
+    height: 680px;
+    border-radius: 1.6rem;
+  }
+
+  .stage-top-bar {
+    min-height: 70px;
+    padding: 12px 18px;
+  }
+
+  .stage-reading-grid.four,
+  .stage-reading-grid.two {
+    grid-template-columns: 1fr;
+  }
+
+  .stage-bottom-bar {
+    position: relative;
+  }
+}
+
+
+.home-hero-signature {
+  max-width: 520px;
+  font-family: "Inter Tight", "Inter", sans-serif;
+  font-size: clamp(1rem, 1.15vw, 1.25rem);
+  font-weight: 400;
+  line-height: 1.65;
+  letter-spacing: -0.015em;
+  color: rgba(244, 241, 234, 0.62);
+}
+/* =========================================================
+   FINAL POLISH LAYOUT SYSTEM
+========================================================= */
+
+.experience-page {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+  color: white;
+  padding-top: calc(var(--nav-height) + 72px);
+}
+
+.experience-section {
+  position: relative;
+  z-index: 10;
+}
+
+.experience-inner {
+  width: min(100%, 1520px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(28px, 4vw, 56px);
+  padding-bottom: clamp(72px, 8vw, 128px);
+}
+
+.experience-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(340px, 1.12fr);
+  gap: clamp(28px, 5vw, 72px);
+  align-items: end;
+}
+
+.experience-copy {
+  max-width: 760px;
+}
+
+.experience-title {
+  margin: 0;
+  margin-top: 24px;
+  max-width: 880px;
+  font-family: "Inter Tight", "Inter", sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.052em;
+  line-height: 1.02;
+  font-size: clamp(2.45rem, 4.4vw, 5.15rem);
+  text-wrap: balance;
+}
+
+.experience-description {
+  max-width: 680px;
+  color: var(--muted);
+  font-size: clamp(0.95rem, 1.05vw, 1.08rem);
+  line-height: 1.85;
+  letter-spacing: -0.015em;
+}
+
+.experience-card-grid {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.experience-stage {
+  position: relative;
+  height: clamp(600px, 66vh, 780px);
+  overflow: hidden;
+  border-radius: 2.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: black;
+  box-shadow:
+    0 0 140px rgba(139, 163, 255, 0.1),
+    inset 0 0 90px rgba(255, 255, 255, 0.02);
+}
+
+.stage-overlay-soft {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at center,
+      transparent 0%,
+      rgba(3, 4, 6, 0.04) 46%,
+      rgba(3, 4, 6, 0.72) 100%
+    );
+}
+
+.stage-top-bar {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 76px;
+  padding: 14px 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(24px);
+}
+
+.stage-bottom-bar {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(24px);
+}
+
+.stage-reading-grid {
+  display: grid;
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.stage-reading-grid.four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.stage-reading-grid.two {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+}
+
+.stage-reading-cell {
+  background: rgba(0, 0, 0, 0.42);
+  padding: 18px;
+}
+
+.stage-stats {
+  display: flex;
+  gap: 34px;
+  text-align: right;
+}
+
+.polish-metric-card {
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.028);
+  padding: 16px;
+}
+
+.polish-metric-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.polish-metric-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.46rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.polish-metric-value {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: white;
+}
+
+.polish-metric-text {
+  margin-top: 12px;
+  font-size: 0.76rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+@media (max-width: 1080px) {
+  .experience-page {
+    padding-top: calc(var(--nav-height) + 44px);
+  }
+
+  .experience-hero {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .experience-title {
+    font-size: clamp(2.35rem, 8vw, 4.8rem);
+  }
+
+  .stage-stats {
+    display: none;
+  }
+
+  .experience-stage {
+    height: clamp(560px, 64vh, 720px);
+  }
+}
+
+@media (max-width: 760px) {
+  .experience-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .experience-stage {
+    height: 680px;
+    border-radius: 1.6rem;
+  }
+
+  .stage-top-bar {
+    min-height: 70px;
+    padding: 12px 18px;
+  }
+
+  .stage-reading-grid.four,
+  .stage-reading-grid.two {
+    grid-template-columns: 1fr;
+  }
+
+  .stage-bottom-bar {
+    position: relative;
+  }
+}
+}

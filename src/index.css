@@ -1,0 +1,138 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap");
+
+@import "tailwindcss";
+
+:root {
+  --bg: #050505;
+  --bg-soft: #0c0c0c;
+
+  --surface: rgba(255,255,255,0.03);
+
+  --ink: #f5f1e8;
+  --muted: rgba(245,241,232,0.58);
+  --dim: rgba(245,241,232,0.28);
+
+  --rule: rgba(255,255,255,0.08);
+  --rule-strong: rgba(255,255,255,0.16);
+
+  --liquidity: #8ba3ff;
+  --volatility: #ffb86b;
+  --risk: #ff6b6b;
+
+  --hero-glow: rgba(139,163,255,0.18);
+
+  --font-display: "Instrument Serif", serif;
+  --font-mono: "DM Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top, rgba(139,163,255,0.08), transparent 30%),
+    #050505;
+
+  color: var(--ink);
+
+  font-family: var(--font-mono);
+
+  overflow-x: hidden;
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(255,255,255,0.15);
+}
+
+.display-font {
+  font-family: var(--font-display);
+}
+
+.mono-font {
+  font-family: var(--font-mono);
+}
+
+.glass-panel {
+  background: rgba(255,255,255,0.03);
+
+  backdrop-filter: blur(24px);
+
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.editorial-grid {
+  width: min(1440px, calc(100vw - 64px));
+  margin-inline: auto;
+}
+
+.hero-noise {
+  position: absolute;
+  inset: 0;
+
+  opacity: 0.04;
+
+  background-image:
+    linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px);
+
+  background-size: 120px 120px;
+
+  mask-image: radial-gradient(circle at center, black, transparent 80%);
+}
+
+.section-spacing {
+  padding-block: 10rem;
+}
+
+.hairline {
+  width: 100%;
+  height: 1px;
+  background: var(--rule);
+}
+
+.editorial-label {
+  font-size: 0.7rem;
+
+  letter-spacing: 0.32em;
+
+  text-transform: uppercase;
+
+  color: var(--dim);
+}
+
+.massive-title {
+  font-size: clamp(4rem, 10vw, 10rem);
+
+  line-height: 0.9;
+
+  letter-spacing: -0.04em;
+}
+
+.section-title {
+  font-size: clamp(2.5rem, 5vw, 5rem);
+
+  line-height: 0.95;
+
+  letter-spacing: -0.04em;
+}
+
+.soft-text {
+  color: var(--muted);
+
+  line-height: 1.9;
+}
+
+.financial-glow {
+  box-shadow:
+    0 0 120px rgba(139,163,255,0.12),
+    inset 0 0 60px rgba(255,255,255,0.02);
+}
